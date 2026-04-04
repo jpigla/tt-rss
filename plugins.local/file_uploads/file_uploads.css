@@ -1,0 +1,39 @@
+.fu-drop-zone {
+	border: 2px dashed var(--border-default, #ccc);
+	border-radius: 8px;
+	padding: 40px 20px;
+	text-align: center;
+	cursor: pointer;
+	transition: border-color 0.2s, background-color 0.2s;
+	margin-bottom: 16px;
+}
+
+.fu-drop-zone:hover {
+	border-color: var(--color-accent, #257fad);
+	background: rgba(37, 127, 173, 0.05);
+}
+
+.fu-drop-zone.fu-drag-over {
+	border-color: var(--color-accent, #257fad);
+	background: rgba(37, 127, 173, 0.1);
+}
+
+.fu-drop-zone p {
+	margin: 4px 0;
+	color: var(--default-fg, #666);
+}
+
+.fu-hint {
+	font-size: 12px;
+	opacity: 0.7;
+}
+
+.fu-uploaded-content {
+	font-family: monospace;
+	font-size: 13px;
+	white-space: pre-wrap;
+	word-break: break-word;
+	padding: 8px;
+	background: var(--default-bg, #f8f9fa);
+	border-radius: 4px;
+}

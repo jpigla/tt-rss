@@ -1,0 +1,17 @@
+.prefOutputFeeds {
+	border-collapse: collapse;
+	margin: 8px 0;
+}
+
+.prefOutputFeeds th {
+	text-align: left;
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--border-color, #ddd);
+	font-weight: 600;
+}
+
+.prefOutputFeeds td {
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--border-color, #eee);
+	vertical-align: middle;
+}

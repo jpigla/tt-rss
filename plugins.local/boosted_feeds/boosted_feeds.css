@@ -1,0 +1,11 @@
+.boosted-feed-item {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 0;
+}
+
+.boosted-feed-item .material-icons {
+	color: var(--color-accent, #ff9800);
+	font-size: 18px;
+}

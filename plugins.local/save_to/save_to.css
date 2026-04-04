@@ -1,0 +1,23 @@
+.save-to-btn {
+	cursor: pointer;
+}
+
+.save-to-dropdown {
+	background: var(--default-bg, #fff);
+	border: 1px solid var(--border-color, #ccc);
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	min-width: 140px;
+	padding: 4px 0;
+}
+
+.save-to-menu-item {
+	padding: 8px 16px;
+	cursor: pointer;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+.save-to-menu-item:hover {
+	background: var(--default-highlight-bg, #e8e8e8);
+}

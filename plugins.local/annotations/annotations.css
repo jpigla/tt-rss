@@ -1,0 +1,117 @@
+.ann-highlight {
+	border-radius: 2px;
+	padding: 0 1px;
+	cursor: pointer;
+}
+
+.ann-highlight.ann-has-note {
+	border-bottom: 2px dotted rgba(0, 0, 0, 0.3);
+}
+
+.ann-popup {
+	background: var(--default-bg, #fff);
+	border: 1px solid var(--border-default, #ccc);
+	border-radius: 6px;
+	padding: 10px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	min-width: 240px;
+	max-width: 350px;
+}
+
+.ann-color-row {
+	display: flex;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+.ann-color-btn {
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	border: 2px solid transparent;
+	cursor: pointer;
+	transition: border-color 0.15s;
+}
+
+.ann-color-btn:hover {
+	border-color: rgba(0, 0, 0, 0.3);
+}
+
+.ann-color-btn.ann-color-active {
+	border-color: var(--color-accent, #257fad);
+	box-shadow: 0 0 0 2px rgba(37, 127, 173, 0.3);
+}
+
+.ann-note-input {
+	width: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--border-default, #ccc);
+	border-radius: 4px;
+	padding: 6px 8px;
+	font-size: 12px;
+	resize: vertical;
+	margin-bottom: 8px;
+	font-family: inherit;
+}
+
+.ann-btn-row {
+	display: flex;
+	gap: 6px;
+	justify-content: flex-end;
+}
+
+.ann-save-btn,
+.ann-cancel-btn {
+	padding: 4px 12px;
+	border-radius: 4px;
+	border: 1px solid var(--border-default, #ccc);
+	cursor: pointer;
+	font-size: 12px;
+}
+
+.ann-save-btn {
+	background: var(--color-accent, #257fad);
+	color: #fff;
+	border-color: var(--color-accent, #257fad);
+}
+
+.ann-cancel-btn {
+	background: transparent;
+}
+
+.ann-count-badge {
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	background: var(--color-accent, #257fad);
+	color: #fff;
+	font-size: 9px;
+	border-radius: 50%;
+	width: 14px;
+	height: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+}
+
+.ann-prefs-list table {
+	border-collapse: collapse;
+}
+
+.ann-prefs-list td {
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--border-default, #eee);
+	font-size: 13px;
+}
+
+.ann-prefs-list tr.title td {
+	font-weight: bold;
+	border-bottom: 2px solid var(--border-default, #ccc);
+}
+
+.ann-highlight-preview {
+	border-radius: 2px;
+	padding: 1px 3px;
+}

@@ -1,0 +1,87 @@
+.ai-prompts-btn:hover {
+	color: var(--color-accent, #9c27b0) !important;
+}
+
+.ai-prompts-dropdown {
+	background: var(--bg-primary, #fff);
+	border: 1px solid var(--border-color, #ddd);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+	min-width: 200px;
+	max-width: 320px;
+	overflow: hidden;
+}
+
+.ai-prompts-dropdown-header {
+	padding: 8px 12px;
+	font-weight: 600;
+	font-size: 12px;
+	color: var(--fg-secondary, #888);
+	border-bottom: 1px solid var(--border-color, #ddd);
+}
+
+.ai-prompts-dropdown-item {
+	padding: 8px 12px;
+	cursor: pointer;
+	font-size: 13px;
+}
+
+.ai-prompts-dropdown-item:hover {
+	background: var(--bg-hover, rgba(0,0,0,0.05));
+}
+
+.ai-prompts-overlay {
+	position: fixed;
+	top: 0; left: 0; right: 0; bottom: 0;
+	background: rgba(0,0,0,0.4);
+	z-index: 9999;
+}
+
+.ai-prompts-dialog {
+	position: fixed;
+	top: 50%; left: 50%;
+	transform: translate(-50%, -50%);
+	background: var(--bg-primary, #fff);
+	border-radius: 8px;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+	width: 600px;
+	max-width: 90vw;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+	z-index: 10000;
+}
+
+.ai-prompts-dialog-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 16px;
+	font-weight: 600;
+	border-bottom: 1px solid var(--border-color, #ddd);
+}
+
+.ai-prompts-dialog-body {
+	padding: 16px;
+	overflow-y: auto;
+	white-space: pre-wrap;
+	line-height: 1.6;
+	font-size: 14px;
+}
+
+.prefPromptsTable {
+	border-collapse: collapse;
+}
+
+.prefPromptsTable th,
+.prefPromptsTable td {
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--border-color, #ddd);
+	text-align: left;
+}
+
+.prefPromptsTable th {
+	font-weight: 600;
+	font-size: 12px;
+	color: var(--fg-secondary, #888);
+}

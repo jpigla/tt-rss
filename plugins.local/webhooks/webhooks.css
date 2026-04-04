@@ -1,0 +1,8 @@
+.webhooks-events label {
+	display: block;
+	margin: 4px 0;
+}
+
+.webhooks-events label input {
+	margin-right: 6px;
+}

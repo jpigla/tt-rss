@@ -1,0 +1,30 @@
+.filter-log-stats {
+	padding: 8px 0;
+	margin-bottom: 8px;
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+table.prefFilterLog {
+	border-collapse: collapse;
+	font-size: 12px;
+}
+
+table.prefFilterLog th {
+	text-align: left;
+	padding: 6px 8px;
+	border-bottom: 2px solid var(--border-color, #ddd);
+	font-weight: 600;
+}
+
+table.prefFilterLog td {
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--border-color, #eee);
+	vertical-align: top;
+}
+
+table.prefFilterLog tr:hover td {
+	background: var(--bg-secondary, rgba(0, 0, 0, 0.02));
+}

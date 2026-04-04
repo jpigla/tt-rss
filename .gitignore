@@ -6,6 +6,8 @@ Thumbs.db
 /node_modules
 /locale/**/*.po~
 /plugins.local/*
+!/plugins.local/*/
+!/plugins.local/PLUGINS-DOKUMENTATION.md
 /themes.local/*
 /templates.local/*
 /config.php

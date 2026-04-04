@@ -1,0 +1,31 @@
+.ts-team-card {
+	border: 1px solid var(--border-default, #ddd);
+	border-radius: 8px;
+	padding: 12px 16px;
+	margin-bottom: 12px;
+	background: var(--default-bg, #fff);
+}
+
+.ts-team-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.ts-team-header h3 {
+	margin: 0;
+	font-size: 15px;
+}
+
+.ts-meta {
+	font-size: 12px;
+	color: var(--default-fg, #888);
+	opacity: 0.7;
+}
+
+.ts-team-actions {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}

@@ -1,0 +1,125 @@
+.ai-reports-toolbar-btn:hover {
+	color: var(--color-accent, #ff6f00) !important;
+}
+
+.ai-reports-overlay {
+	position: fixed;
+	top: 0; left: 0; right: 0; bottom: 0;
+	background: rgba(0,0,0,0.4);
+	z-index: 9999;
+}
+
+.ai-reports-dialog {
+	position: fixed;
+	top: 50%; left: 50%;
+	transform: translate(-50%, -50%);
+	background: var(--bg-primary, #fff);
+	border-radius: 10px;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+	width: 600px;
+	max-width: 90vw;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+	z-index: 10000;
+}
+
+.ai-reports-dialog.ai-reports-view {
+	width: 700px;
+}
+
+.ai-reports-dialog-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	font-weight: 600;
+	border-bottom: 1px solid var(--border-color, #ddd);
+}
+
+.ai-reports-dialog-header .material-icons:first-child {
+	color: var(--color-accent, #ff6f00);
+	font-size: 20px;
+}
+
+.ai-reports-dialog-body {
+	padding: 16px;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.ai-reports-report-text {
+	white-space: pre-wrap;
+	line-height: 1.7;
+	font-size: 14px;
+}
+
+.ai-reports-dialog-footer {
+	padding: 12px 16px;
+	border-top: 1px solid var(--border-color, #ddd);
+	display: flex;
+	justify-content: flex-end;
+}
+
+.ai-reports-tabs {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 16px;
+}
+
+.ai-reports-tab {
+	padding: 6px 14px;
+	border: 1px solid var(--border-color, #ddd);
+	border-radius: 4px;
+	background: transparent;
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--fg-primary, #333);
+}
+
+.ai-reports-tab.active {
+	background: var(--color-accent, #ff6f00);
+	color: #fff;
+	border-color: var(--color-accent, #ff6f00);
+}
+
+.ai-reports-generate-btn {
+	padding: 8px 20px;
+	border: none;
+	border-radius: 4px;
+	background: var(--color-accent, #ff6f00);
+	color: #fff;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.ai-reports-generate-btn:hover {
+	opacity: 0.85;
+}
+
+.prefReportsTable {
+	border-collapse: collapse;
+}
+
+.prefReportsTable th,
+.prefReportsTable td {
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--border-color, #ddd);
+	text-align: left;
+}
+
+.prefReportsTable th {
+	font-weight: 600;
+	font-size: 12px;
+	color: var(--fg-secondary, #888);
+}
+
+.prefReportsTable a {
+	color: var(--color-accent, #ff6f00);
+	text-decoration: none;
+}
+
+.prefReportsTable a:hover {
+	text-decoration: underline;
+}

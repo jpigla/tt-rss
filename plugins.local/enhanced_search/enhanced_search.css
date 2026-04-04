@@ -1,0 +1,29 @@
+.es-toolbar-btn {
+	color: var(--fg-color, #555);
+	margin: 0 2px;
+}
+
+.es-toolbar-btn:hover {
+	color: var(--fg-color-link, #2196f3);
+}
+
+.es-search-table {
+	border-collapse: collapse;
+	margin: 8px 0;
+}
+
+.es-search-table th {
+	text-align: left;
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--border-color, #ddd);
+	font-weight: bold;
+}
+
+.es-search-table td {
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--border-color, #eee);
+}
+
+.es-search-table tr:hover td {
+	background: var(--bg-color-hover, rgba(0,0,0,0.03));
+}

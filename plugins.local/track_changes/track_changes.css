@@ -1,0 +1,50 @@
+.track-changes-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 8px;
+}
+
+.track-changes-table th,
+.track-changes-table td {
+	padding: 6px 10px;
+	text-align: left;
+	border-bottom: 1px solid var(--border-color, #ddd);
+}
+
+.track-changes-table th {
+	font-weight: 600;
+	background: var(--default-bg, #f5f5f5);
+}
+
+.track-changes-table td.actions {
+	white-space: nowrap;
+}
+
+.track-changes-table .url-cell {
+	max-width: 300px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tc-add-form fieldset {
+	margin-bottom: 8px;
+}
+
+.tc-add-form label {
+	display: inline-block;
+	min-width: 120px;
+}
+
+.tc-status-ok {
+	color: #4caf50;
+}
+
+.tc-status-changed {
+	color: #ff9800;
+	font-weight: 600;
+}
+
+.tc-status-new {
+	color: #2196f3;
+}

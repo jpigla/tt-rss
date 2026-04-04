@@ -34,6 +34,87 @@ Please refer to [the installation guide](https://tt-rss.org/docs/Installation-Gu
 * Plugins that were under https://gitlab.tt-rss.org/tt-rss/plugins have been mirrored to `https://github.com/tt-rss/tt-rss-plugin-*`.
   * Plugin repository names have changed to get a consistent `tt-rss-plugin-*` prefix.
 
+## Inoreader-Erweiterungen (Custom Plugins)
+
+Dieses Fork erweitert TT-RSS um Funktionen nach dem Vorbild von [Inoreader](https://www.inoreader.com). Alle Erweiterungen sind als Plugins in `plugins.local/` implementiert und nutzen das bestehende Hook-System -- keine Core-Änderungen nötig.
+
+### Verfügbare Plugins (43 Plugins in 5 Phasen)
+
+#### Phase 1 -- Lese-Erlebnis
+| Plugin | Beschreibung |
+|--------|-------------|
+| **reading_time** | Geschätzte Lesezeit pro Artikel (konfigurierbare WPM) |
+| **boosted_feeds** | Kürzere Aktualisierungsintervalle für ausgewählte Feeds |
+| **keyword_spotlight** | Keywords farblich hervorheben (5 Farbgruppen) |
+| **filter_log** | Protokoll aller Filter-Aktionen mit Detailtabelle |
+| **read_later** | Später-Lesen-Funktion mit Hotkey `l` |
+| **af_fulltext** | Volltext-Extraktion direkt im Reader |
+| **enhanced_tags** | Erweitertes Tagging: Autocomplete, Tag-Cloud, Kreuzsuche |
+| **dedup_filter** | Duplikaterkennung via Titel-Ähnlichkeit und URL |
+
+#### Phase 2 -- Quellenaufnahme
+| Plugin | Beschreibung |
+|--------|-------------|
+| **web_feeds** | Webseiten ohne RSS per CSS-Selektoren scrapen |
+| **social_feeds** | Reddit/YouTube/Mastodon/GitHub URL-Rewriting zu RSS |
+| **news_search_feed** | Google-News-Suchen als Feed abonnieren |
+| **track_changes** | Webseiten auf Änderungen überwachen |
+| **monitoring_feeds** | Keyword-basiertes Artikel-Monitoring mit Auto-Tagging |
+| **podcast_player** | HTML5-Audio-Player mit Speed-Control und Fortschritt |
+| **save_page** | Beliebige Webseiten als Artikel speichern |
+| **youtube_sync** | YouTube-Abos importieren + Video-Embedding |
+| **feed_autodetect** | Erweiterte Feed-Erkennung (14 gängige Pfade) |
+
+#### Phase 3 -- Automatisierung
+| Plugin | Beschreibung |
+|--------|-------------|
+| **webhooks** | HTTP-Webhooks bei Filter-Aktionen mit HMAC-Signatur |
+| **push_notify** | Push-Benachrichtigungen (ntfy.sh/Gotify/Pushover) |
+| **output_feeds** | RSS-Feeds aus Ordnern/Labels/Tags generieren |
+| **save_to** | Export zu Wallabag/Pocket/Linkding/Instapaper |
+| **pdf_export** | Artikel als druckoptimiertes HTML exportieren |
+| **enhanced_search** | Gespeicherte Suchen mit Quick-Access |
+| **enhanced_filters** | Erweiterte Filter-Regeln (Länge, Regex, Score) |
+| **bulk_actions** | Massenoperationen: Taggen, Label zuweisen |
+| **browser_extension** | Server-API für Browser-Erweiterung + Bookmarklet |
+
+#### Phase 4 -- KI & Intelligence
+| Plugin | Beschreibung |
+|--------|-------------|
+| **ai_core** | LLM-Abstraktionsschicht (Ollama/OpenAI/Anthropic/Custom) |
+| **ai_summary** | KI-Zusammenfassungen in 3 Modi (Kurz/Stichpunkte/Ausführlich) |
+| **ai_prompts** | Benutzerdefinierte KI-Prompts auf Artikel anwenden |
+| **ai_chat** | Fragen an Artikel stellen (Chat-Interface) |
+| **translate** | Artikelübersetzung (LibreTranslate/DeepL/KI) |
+| **tts** | Text-to-Speech via Browser Web Speech API |
+| **ai_tags** | KI-gestützte Tag-Vorschläge + Auto-Tagging |
+| **magic_sort** | Relevanz-Sortierung nach Feed-Engagement |
+| **ai_reports** | Multi-Artikel Intelligence Reports |
+
+#### Phase 5 -- Kollaboration & UI
+| Plugin | Beschreibung |
+|--------|-------------|
+| **annotations** | Text-Highlighting und Annotationen in Artikeln |
+| **reading_progress** | Lesefortschritt mit Fortschrittsbalken |
+| **resizable_sidebar** | Seitenleiste per Drag in der Breite anpassen |
+| **dashboards** | Konfigurierbare Dashboards mit Widgets |
+| **edit_metadata** | Artikelmetadaten (Titel, Autor) bearbeiten |
+| **newsletter_feeds** | E-Mail-Newsletter per IMAP als Feed |
+| **team_spaces** | Team-Arbeitsbereiche mit geteilten Artikeln |
+| **file_uploads** | PDF/TXT/HTML-Dateien als Artikel hochladen |
+
+### Schnellstart
+
+1. Plugins in TT-RSS unter **Einstellungen > Plugins** aktivieren
+2. Konfiguration über die jeweiligen Prefs-Tabs (Einstellungen > Feeds/Einstellungen)
+3. Für KI-Features: `ai_core` zuerst aktivieren, Provider konfigurieren (Ollama empfohlen)
+4. Für Übersetzung: `translate` konfigurieren (LibreTranslate für Self-Hosting)
+5. Für Team-Features: `team_spaces` aktivieren, Teams in den Einstellungen erstellen
+
+### Dokumentation
+
+Die ausführliche technische Dokumentation aller Plugins befindet sich in [`plugins.local/PLUGINS-DOKUMENTATION.md`](plugins.local/PLUGINS-DOKUMENTATION.md).
+
 ## Development and contributing
 
 Contributions (code, translations, reporting issues, etc.) are welcome. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for more information.

@@ -1,0 +1,25 @@
+.web-feeds-config fieldset {
+	margin: 4px 0;
+}
+
+.web-feeds-config label {
+	display: inline-block;
+	min-width: 160px;
+	font-weight: bold;
+}
+
+.web-feeds-config input[type="text"] {
+	width: 350px;
+}
+
+.web-feeds-list table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.web-feeds-list table th,
+.web-feeds-list table td {
+	padding: 4px 8px;
+	text-align: left;
+	border-bottom: 1px solid #ddd;
+}

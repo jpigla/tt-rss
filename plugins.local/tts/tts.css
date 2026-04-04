@@ -1,0 +1,61 @@
+.tts-btn:hover {
+	color: var(--color-accent, #e65100) !important;
+}
+
+.tts-player {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 20px;
+	background: var(--bg-primary, #fff);
+	border-top: 2px solid var(--color-accent, #e65100);
+	box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+	z-index: 10000;
+	font-size: 13px;
+}
+
+.tts-player > .material-icons {
+	color: var(--color-accent, #e65100);
+}
+
+.tts-player-label {
+	font-weight: 600;
+	color: var(--fg-primary, #333);
+}
+
+.tts-player-progress {
+	font-size: 12px;
+	color: var(--fg-secondary, #888);
+}
+
+.tts-player-controls {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-left: auto;
+}
+
+.tts-control-btn {
+	cursor: pointer;
+	font-size: 22px;
+	color: var(--fg-primary, #333);
+	padding: 4px;
+	border-radius: 50%;
+}
+
+.tts-control-btn:hover {
+	background: var(--bg-hover, rgba(0,0,0,0.05));
+	color: var(--color-accent, #e65100);
+}
+
+.tts-rate-label {
+	font-size: 12px;
+	font-weight: 600;
+	min-width: 36px;
+	text-align: center;
+	color: var(--fg-secondary, #888);
+}

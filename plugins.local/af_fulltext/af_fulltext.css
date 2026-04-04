@@ -1,0 +1,17 @@
+.af-fulltext-btn {
+	transition: color 0.15s ease;
+}
+
+.af-fulltext-btn.af-fulltext-loading {
+	animation: af-fulltext-spin 1s linear infinite;
+	color: var(--color-accent, #2196f3) !important;
+}
+
+.af-fulltext-btn.af-fulltext-loaded {
+	color: var(--color-accent, #4caf50) !important;
+}
+
+@keyframes af-fulltext-spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}

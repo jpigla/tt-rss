@@ -1,0 +1,146 @@
+.db-dashboard {
+	padding: 16px;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.db-header h2 {
+	margin: 0 0 16px 0;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.db-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 16px;
+}
+
+.db-widget {
+	background: var(--default-bg, #fff);
+	border: 1px solid var(--border-default, #ddd);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.db-widget-header {
+	padding: 12px 16px;
+	font-weight: 600;
+	font-size: 14px;
+	border-bottom: 1px solid var(--border-default, #eee);
+	background: var(--default-bg, #f8f9fa);
+}
+
+.db-widget-content {
+	padding: 12px 16px;
+	font-size: 13px;
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.db-feed-list,
+.db-article-list,
+.db-label-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.db-feed-list li,
+.db-article-list li,
+.db-label-list li {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 6px 0;
+	border-bottom: 1px solid var(--border-default, #f0f0f0);
+}
+
+.db-feed-list li:last-child,
+.db-article-list li:last-child,
+.db-label-list li:last-child {
+	border-bottom: none;
+}
+
+.db-feed-title {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.db-feed-count {
+	background: var(--color-accent, #257fad);
+	color: #fff;
+	border-radius: 10px;
+	padding: 2px 8px;
+	font-size: 11px;
+	min-width: 20px;
+	text-align: center;
+	margin-left: 8px;
+}
+
+.db-article-list li {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.db-article-list a {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 100%;
+	display: block;
+}
+
+.db-meta {
+	font-size: 11px;
+	color: var(--default-fg, #888);
+	opacity: 0.7;
+	margin-top: 2px;
+}
+
+.db-label-chip {
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 12px;
+}
+
+.db-label-count {
+	font-size: 12px;
+	color: var(--default-fg, #666);
+}
+
+.db-stats-grid {
+	display: flex;
+	gap: 16px;
+	justify-content: space-around;
+}
+
+.db-stat {
+	text-align: center;
+}
+
+.db-stat-value {
+	display: block;
+	font-size: 28px;
+	font-weight: 700;
+	color: var(--color-accent, #257fad);
+}
+
+.db-stat-label {
+	display: block;
+	font-size: 12px;
+	color: var(--default-fg, #888);
+	margin-top: 4px;
+}
+
+.db-empty {
+	text-align: center;
+	color: var(--default-fg, #999);
+	padding: 16px;
+}
+
+.db-prefs-toolbar {
+	margin-bottom: 10px;
+}
