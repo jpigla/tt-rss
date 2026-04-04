@@ -101,9 +101,16 @@ class File_Uploads extends Plugin {
 
 		$file = $_FILES['file'];
 		$filename = basename($file['name']);
-		$content_type = $file['type'];
 		$file_size = (int)$file['size'];
 		$tmp_path = $file['tmp_name'];
+
+		// Content-Type aus Dateiendung ableiten statt Client-Angabe zu vertrauen
+		$ext_to_mime = [
+			'txt' => 'text/plain', 'html' => 'text/html', 'htm' => 'text/html',
+			'pdf' => 'application/pdf', 'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+		];
+		$ext_lower = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+		$content_type = $ext_to_mime[$ext_lower] ?? 'application/octet-stream';
 
 		// Dateiendung prüfen
 		$ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));

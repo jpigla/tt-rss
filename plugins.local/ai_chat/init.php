@@ -26,11 +26,11 @@ class Ai_Chat extends Plugin {
 	}
 
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 
 		return "<i class='material-icons ai-chat-btn'
-			data-article-id='$id'
-			onclick=\"Plugins.Ai_Chat.open($id)\"
+			data-article-id='" . $id . "'
+			onclick=\"Plugins.Ai_Chat.open(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('Fragen stellen') . "\">forum</i>";
 	}

@@ -36,11 +36,11 @@ class Ai_Summary extends Plugin {
 	}
 
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 
 		return "<i class='material-icons ai-summary-btn'
-			data-article-id='$id'
-			onclick=\"Plugins.Ai_Summary.generate($id)\"
+			data-article-id='" . $id . "'
+			onclick=\"Plugins.Ai_Summary.generate(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('KI-Zusammenfassung') . "\">auto_awesome</i>";
 	}

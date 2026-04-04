@@ -86,7 +86,7 @@ class Annotations extends Plugin {
 	 * @return string
 	 */
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 
 		$sth = $this->pdo->prepare("SELECT COUNT(*) AS cnt FROM ttrss_plugin_annotations
 			WHERE ref_id = ? AND owner_uid = ?");
@@ -97,7 +97,7 @@ class Annotations extends Plugin {
 		$badge = $count > 0 ? "<span class='ann-count-badge'>$count</span>" : "";
 
 		return "<i class='material-icons ann-btn'
-			onclick=\"Plugins.Annotations.showPanel($id)\"
+			onclick=\"Plugins.Annotations.showPanel(" . $id . ")\"
 			style='cursor: pointer; position: relative'
 			title=\"" . __('Annotationen') . "\">edit_note$badge</i>";
 	}
@@ -156,7 +156,9 @@ class Annotations extends Plugin {
 		$ref_id = (int)clean($_REQUEST['ref_id'] ?? 0);
 		$highlighted_text = clean($_REQUEST['highlighted_text'] ?? '');
 		$note = clean($_REQUEST['note'] ?? '');
-		$color = clean($_REQUEST['color'] ?? '#fff3cd');
+		$color_raw = clean($_REQUEST['color'] ?? '#fff3cd');
+		// Farbe auf gültiges Hex-Format einschränken (CSS-Injection verhindern)
+		$color = preg_match('/^#[0-9a-fA-F]{3,8}$/', $color_raw) ? $color_raw : '#fff3cd';
 		$start_offset = (int)clean($_REQUEST['start_offset'] ?? 0);
 		$end_offset = (int)clean($_REQUEST['end_offset'] ?? 0);
 		$selector_path = clean($_REQUEST['selector_path'] ?? '');

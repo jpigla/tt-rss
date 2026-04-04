@@ -54,10 +54,10 @@ JS;
 	 * @return string
 	 */
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 
 		return "<i class='material-icons'
-			onclick=\"Plugins.Pdf_Export.export($id)\"
+			onclick=\"Plugins.Pdf_Export.export(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('Als PDF exportieren') . "\">print</i>";
 	}

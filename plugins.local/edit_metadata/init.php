@@ -32,9 +32,9 @@ class Edit_Metadata extends Plugin {
 	 * @return string
 	 */
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 		return "<i class='material-icons'
-			onclick=\"Plugins.Edit_Metadata.edit($id)\"
+			onclick=\"Plugins.Edit_Metadata.edit(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('Metadaten bearbeiten') . "\">edit</i>";
 	}

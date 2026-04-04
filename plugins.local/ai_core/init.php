@@ -84,9 +84,17 @@ class Ai_Core extends Plugin {
 	 * OpenAI-kompatible API (funktioniert auch mit Custom-Endpoints).
 	 */
 	private static function complete_openai(array $config, string $system_prompt, string $user_message, int $max_tokens) {
-		$endpoint = $config['provider'] === self::PROVIDER_CUSTOM
-			? rtrim($config['endpoint'], '/') . '/v1/chat/completions'
-			: 'https://api.openai.com/v1/chat/completions';
+		if ($config['provider'] === self::PROVIDER_CUSTOM) {
+			$parsed = parse_url($config['endpoint']);
+			$scheme = $parsed['scheme'] ?? '';
+			if (!in_array($scheme, ['http', 'https'])) {
+				Debug::log("ai_core: Ungültiges Schema im Custom-Endpoint: $scheme", Debug::LOG_VERBOSE);
+				return false;
+			}
+			$endpoint = rtrim($config['endpoint'], '/') . '/v1/chat/completions';
+		} else {
+			$endpoint = 'https://api.openai.com/v1/chat/completions';
+		}
 
 		$payload = json_encode([
 			'model' => $config['model'],
@@ -153,6 +161,14 @@ class Ai_Core extends Plugin {
 	 * Ollama (lokal).
 	 */
 	private static function complete_ollama(array $config, string $system_prompt, string $user_message, int $max_tokens) {
+		$parsed = parse_url($config['endpoint']);
+		$host = $parsed['host'] ?? '';
+		// Grundlegende SSRF-Schutzmaßnahme: Nur erwartete Hosts/Schemata erlauben
+		$scheme = $parsed['scheme'] ?? '';
+		if (!in_array($scheme, ['http', 'https'])) {
+			Debug::log("ai_core: Ungültiges Schema im Endpoint: $scheme", Debug::LOG_VERBOSE);
+			return false;
+		}
 		$endpoint = rtrim($config['endpoint'], '/') . '/api/chat';
 
 		$payload = json_encode([

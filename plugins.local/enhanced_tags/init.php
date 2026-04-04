@@ -29,13 +29,13 @@ class Enhanced_Tags extends Plugin {
 	}
 
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 		$tag_cache = $line['tag_cache'] ?? '';
 		$has_tags = !empty(trim($tag_cache));
 
 		return "<i class='material-icons et-tag-btn " . ($has_tags ? 'et-has-tags' : '') . "'
-			data-article-id='$id'
-			onclick=\"Plugins.Enhanced_Tags.edit($id)\"
+			data-article-id='" . $id . "'
+			onclick=\"Plugins.Enhanced_Tags.edit(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('Tags bearbeiten') . "\">sell</i>";
 	}

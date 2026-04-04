@@ -94,7 +94,8 @@ class Browser_Extension extends Plugin {
 			Article::_create_published_article($title, $url, $content, '', $owner_uid);
 			print json_encode(['status' => 'ok']);
 		} catch (Exception $e) {
-			print json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern: ' . $e->getMessage()]);
+			Debug::log("browser_extension: Fehler beim Speichern: " . $e->getMessage(), Debug::LOG_VERBOSE);
+			print json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern des Artikels.']);
 		}
 	}
 

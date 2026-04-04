@@ -36,9 +36,9 @@ class Team_Spaces extends Plugin {
 	 * @return string
 	 */
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 		return "<i class='material-icons'
-			onclick=\"Plugins.Team_Spaces.shareDialog($id)\"
+			onclick=\"Plugins.Team_Spaces.shareDialog(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('Im Team teilen') . "\">group</i>";
 	}

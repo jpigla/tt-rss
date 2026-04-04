@@ -26,11 +26,11 @@ class Tts extends Plugin {
 	}
 
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 
 		return "<i class='material-icons tts-btn'
-			data-article-id='$id'
-			onclick=\"Plugins.Tts.speak($id)\"
+			data-article-id='" . $id . "'
+			onclick=\"Plugins.Tts.speak(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('Vorlesen') . "\">volume_up</i>";
 	}

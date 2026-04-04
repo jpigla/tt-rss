@@ -28,9 +28,10 @@ class Af_Fulltext extends Plugin {
 	}
 
 	function hook_article_button($line) {
+		$id = (int) $line["id"];
 		return "<i class='material-icons af-fulltext-btn'
-			data-article-id='" . $line["id"] . "'
-			onclick=\"Plugins.Af_Fulltext.fetch(" . $line["id"] . ")\"
+			data-article-id='" . $id . "'
+			onclick=\"Plugins.Af_Fulltext.fetch(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('Volltext laden') . "\">article</i>";
 	}

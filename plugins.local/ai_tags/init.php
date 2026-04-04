@@ -45,11 +45,11 @@ class Ai_Tags extends Plugin {
 	}
 
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 
 		return "<i class='material-icons ai-tags-btn'
-			data-article-id='$id'
-			onclick=\"Plugins.Ai_Tags.suggest($id)\"
+			data-article-id='" . $id . "'
+			onclick=\"Plugins.Ai_Tags.suggest(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('Tags vorschlagen') . "\">auto_fix_high</i>";
 	}

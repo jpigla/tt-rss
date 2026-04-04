@@ -114,6 +114,11 @@ class Enhanced_Filters extends Plugin {
 				return mb_stripos($field_value, $value) === false;
 			case 'regex':
 				// Regex-Muster validieren und mit Timeout-Schutz ausführen
+				// Maximale Länge des Regex-Musters begrenzen (ReDoS-Schutz)
+				if (mb_strlen($value) > 500) {
+					Debug::log("enhanced_filters: Regex-Muster zu lang (max 500 Zeichen): " . mb_substr($value, 0, 50) . "...", Debug::LOG_VERBOSE);
+					return false;
+				}
 				if (@preg_match('/' . $value . '/iu', '') === false) {
 					Debug::log("enhanced_filters: Ungültiges Regex-Muster: $value", Debug::LOG_VERBOSE);
 					return false;

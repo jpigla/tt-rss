@@ -62,14 +62,14 @@ class Read_Later extends Plugin {
 	}
 
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 		$is_saved = $this->is_read_later($id);
 		$icon = $is_saved ? 'bookmark' : 'bookmark_border';
 		$title = $is_saved ? __('Aus Leseliste entfernen') : __('Später lesen');
 
 		return "<i class='material-icons read-later-btn " . ($is_saved ? 'read-later-active' : '') . "'
-			data-article-id='$id'
-			onclick=\"Plugins.Read_Later.toggle($id)\"
+			data-article-id='" . $id . "'
+			onclick=\"Plugins.Read_Later.toggle(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"$title\">$icon</i>";
 	}

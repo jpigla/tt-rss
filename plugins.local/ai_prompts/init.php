@@ -44,11 +44,11 @@ class Ai_Prompts extends Plugin {
 	}
 
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 
 		return "<i class='material-icons ai-prompts-btn'
-			data-article-id='$id'
-			onclick=\"Plugins.Ai_Prompts.showMenu($id)\"
+			data-article-id='" . $id . "'
+			onclick=\"Plugins.Ai_Prompts.showMenu(" . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('KI-Prompt') . "\">psychology</i>";
 	}

@@ -39,10 +39,10 @@ class Save_To extends Plugin {
 	 * @return string
 	 */
 	function hook_article_button($line) {
-		$id = $line['id'];
+		$id = (int) $line['id'];
 
 		return "<i class='material-icons save-to-btn'
-			onclick=\"Plugins.Save_To.showMenu(event, $id)\"
+			onclick=\"Plugins.Save_To.showMenu(event, " . $id . ")\"
 			style='cursor: pointer'
 			title=\"" . __('Speichern unter...') . "\">bookmark_add</i>";
 	}
