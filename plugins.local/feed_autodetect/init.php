@@ -29,10 +29,21 @@ class Feed_Autodetect extends Plugin {
 			false];
 	}
 
+	/** @var array<string> HTML5-Boolean-Attribute, die in XML einen Wert brauchen */
+	const HTML5_BOOLEAN_ATTRS = [
+		'crossorigin', 'async', 'defer', 'nomodule', 'hidden', 'disabled',
+		'checked', 'selected', 'readonly', 'required', 'autofocus',
+		'autoplay', 'controls', 'loop', 'muted', 'default', 'allowfullscreen',
+		'formnovalidate', 'novalidate', 'open', 'reversed', 'scoped',
+		'typemustmatch', 'download', 'inert', 'itemscope',
+	];
+
 	function init($host) {
 		$this->host = $host;
 
 		$host->add_hook($host::HOOK_PREFS_TAB, $this);
+		$host->add_hook($host::HOOK_FEED_FETCHED, $this);
+		$host->add_hook($host::HOOK_PRE_SUBSCRIBE, $this);
 	}
 
 	function hook_prefs_tab($args) {
@@ -75,6 +86,73 @@ class Feed_Autodetect extends Plugin {
 			<div id="feed-detect-results" style="margin-top: 16px;"></div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Hook: Feed-Inhalt beim regulären Update bereinigen.
+	 */
+	function hook_feed_fetched($feed_data, $fetch_url, $owner_uid, $feed) {
+		return $this->sanitize_feed_xml($feed_data);
+	}
+
+	/**
+	 * Hook: Vor dem Abonnieren prüfen ob die URL eine HTML-Seite ist
+	 * und ggf. die echte Feed-URL ermitteln.
+	 */
+	function hook_pre_subscribe(&$url, $auth_login, $auth_pass) {
+		$html = UrlHelper::fetch(['url' => $url, 'timeout' => 15]);
+		if ($html === false) return false;
+
+		// Nur weitermachen wenn es HTML ist
+		if (!preg_match('/<html|DOCTYPE html/i', substr($html, 0, 8192))) return false;
+
+		// Feed-URLs aus HTML-Link-Tags extrahieren
+		$parsed = parse_url($url);
+		$base_url = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '');
+
+		$feed_urls = [];
+		$this->find_link_feeds($html, $base_url, $url, $feed_urls);
+
+		// Auch gängige Pfade prüfen wenn keine Link-Tags gefunden
+		if (empty($feed_urls)) {
+			foreach (self::COMMON_FEED_PATHS as $path) {
+				$feed_url = $base_url . $path;
+				$result = UrlHelper::fetch(['url' => $feed_url, 'timeout' => 10]);
+				if ($result !== false && $this->looks_like_feed($result)) {
+					$url = $feed_url;
+					return false;
+				}
+			}
+		}
+
+		if (count($feed_urls) === 1) {
+			$url = $feed_urls[0]['url'];
+		}
+
+		return false;
+	}
+
+	/**
+	 * Repariert HTML5-Boolean-Attribute ohne Wert im Feed-XML.
+	 * Arbeitet nur innerhalb von HTML/XML-Tags, nicht im Fließtext.
+	 */
+	private function sanitize_feed_xml(string $data): string {
+		if (empty($data)) return $data;
+
+		$attrs = implode('|', self::HTML5_BOOLEAN_ATTRS);
+
+		// Matcht komplette HTML/XML-Tags und repariert Boolean-Attribute nur darin
+		return preg_replace_callback(
+			'/<[a-z][a-z0-9]*\b[^>]*>/i',
+			function ($match) use ($attrs) {
+				return preg_replace(
+					'/\s(' . $attrs . ')(?=[\s\/>])(?!\s*=)/i',
+					' $1="$1"',
+					$match[0]
+				) ?? $match[0];
+			},
+			$data
+		) ?? $data;
 	}
 
 	/**
