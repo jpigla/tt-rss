@@ -24,7 +24,7 @@ class Bulk_Actions extends Plugin {
 	/**
 	 * Menüeinträge für das Auswahl-Dropdown in der Headline-Toolbar.
 	 */
-	function hook_headline_toolbar_select_menu_item2(): string {
+	function hook_headline_toolbar_select_menu_item2($feed_id, $is_cat): string {
 		$items = "";
 
 		$items .= "<div dojoType='dijit.MenuItem' onclick='Plugins.Bulk_Actions.bulkTag()'>
