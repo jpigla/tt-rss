@@ -115,6 +115,16 @@ Dieses Fork erweitert TT-RSS um Funktionen nach dem Vorbild von [Inoreader](http
 
 Die ausführliche technische Dokumentation aller Plugins befindet sich in [`plugins.local/PLUGINS-DOKUMENTATION.md`](plugins.local/PLUGINS-DOKUMENTATION.md).
 
+## Änderungen & Weiterentwicklungen gegenüber dem Original-Repo
+
+Dieses Repository basiert auf dem Community-Fork von [tt-rss/tt-rss](https://github.com/tt-rss/tt-rss) und enthält folgende eigene Erweiterungen:
+
+- **43 eigene Plugins** in `plugins.local/` nach dem Vorbild von Inoreader — von KI-Zusammenfassungen über Feed-Scraping bis hin zu Team-Workspaces
+- **KI-Abstraktionsschicht** (`ai_core`) mit einheitlichem Interface für Ollama, OpenAI, Anthropic und kompatible APIs
+- **Sicherheitskorrekturen** in 18 Plugins (Input-Validierung, CSRF-Schutz, sichere Shell-Aufrufe)
+- **Feed-Autodetect-Bugfix**: Fehlerbehebung beim Abonnieren von HTML-Seiten und Korrektur von HTML5-Boolean-Attributen in der XML-Verarbeitung
+- **Sticky Artikel-Header mit Lesefortschrittsbalken**: Der Header (Titel, Datum, Tags) bleibt beim Langen beim Scrollen sichtbar; der Fortschrittsbalken ist am unteren Rand des Headers verankert und zeigt den exakten Lesefortschritt von 0–100 %
+
 ## Development and contributing
 
 Contributions (code, translations, reporting issues, etc.) are welcome. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for more information.

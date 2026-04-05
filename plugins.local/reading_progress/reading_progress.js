@@ -12,6 +12,29 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				Plugins.Reading_Progress.bindScrollEvents();
 			},
 
+			/**
+			 * Fortschrittsbalken in den Header des übergebenen Containers verschieben.
+			 * Drei-Spalten: container = c.domNode (#content-insert), Balken in .post .content
+			 * CDM:          container = .cdm-Zeile, Balken in .content-inner
+			 */
+			moveProgressBarsToHeader: function (container) {
+				const root = container || document;
+
+				// Drei-Spalten-Modus: Balken direkt in .content
+				root.querySelectorAll('.post .content > .rp-progress-container').forEach(function (bar) {
+					const header = bar.closest('.post').querySelector('.header');
+					if (!header) return;
+					header.appendChild(bar);
+				});
+
+				// CDM-Modus: Balken in .content-inner (lazy-loaded)
+				root.querySelectorAll('.cdm .content-inner > .rp-progress-container').forEach(function (bar) {
+					const header = bar.closest('.cdm').querySelector('.header');
+					if (!header) return;
+					header.appendChild(bar);
+				});
+			},
+
 			bindScrollEvents: function () {
 				// Scroll-Events für CDM-Modus
 				const headlines = document.getElementById('headlines-frame');
@@ -38,18 +61,22 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 					const article = container.closest('.cdm, .post');
 					if (!article) return;
 
-					const rect = article.getBoundingClientRect();
-					const viewportHeight = window.innerHeight;
+					// Scroll-Container je nach Modus
+					const isPost = article.classList.contains('post');
+					const scrollEl = document.getElementById(isPost ? 'content-insert' : 'headlines-frame');
+					if (!scrollEl) return;
 
-					// Sichtbaren Bereich des Artikels berechnen
-					const articleTop = rect.top;
-					const articleHeight = rect.height;
+					const articleRect = article.getBoundingClientRect();
+					const containerRect = scrollEl.getBoundingClientRect();
 
-					if (articleHeight <= 0) return;
+					if (articleRect.height <= 0) return;
 
-					// Wie viel des Artikels bereits gescrollt wurde
-					let scrolled = Math.max(0, -articleTop + viewportHeight * 0.3);
-					let pct = Math.min(100, (scrolled / articleHeight) * 100);
+					// Wie weit der Artikel-Anfang über den oberen Rand des Containers hinausgescrollt ist
+					const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
+					// Scrollbare Strecke = Artikelhöhe minus Container-Höhe (letzter sichtbarer Ausschnitt)
+					const readableHeight = Math.max(1, articleRect.height - scrollEl.clientHeight);
+
+					const pct = Math.min(100, (scrolledPast / readableHeight) * 100);
 
 					// Fortschrittsbalken aktualisieren
 					const bar = container.querySelector('.rp-progress-bar');
@@ -57,8 +84,8 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 						bar.style.width = pct + '%';
 					}
 
-					// Debounced speichern
-					Plugins.Reading_Progress.debouncedSave(articleId, pct, Math.round(scrolled));
+					// Debounced speichern (scrolledPast als Pixel-Position)
+					Plugins.Reading_Progress.debouncedSave(articleId, pct, Math.round(scrolledPast));
 				});
 			},
 
@@ -100,8 +127,15 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 			}
 		};
 
-		PluginHost.register(PluginHost.HOOK_HEADLINES_RENDERED, function () {
+		// Drei-Spalten-Modus: Artikel wurde gerendert, c.domNode wird übergeben
+		PluginHost.register(PluginHost.HOOK_ARTICLE_RENDERED, function (domNode) {
+			Plugins.Reading_Progress.moveProgressBarsToHeader(domNode);
 			Plugins.Reading_Progress.bindScrollEvents();
+		});
+
+		// CDM-Modus: Artikel wurde entpackt, .cdm-Zeile wird übergeben
+		PluginHost.register(PluginHost.HOOK_ARTICLE_RENDERED_CDM, function (row) {
+			Plugins.Reading_Progress.moveProgressBarsToHeader(row);
 		});
 
 		Plugins.Reading_Progress.init();
