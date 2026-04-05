@@ -58,3 +58,17 @@ services:
       - .:/var/www/html/tt-rss:ro
     depends_on:
       - app
+
+  edge-tts:
+    build:
+      context: .docker/edge-tts
+    environment:
+      - REQUIRE_API_KEY=true
+      - API_KEY=${EDGE_TTS_API_KEY}
+      - DEFAULT_VOICE=de-DE-ConradNeural
+      - DEFAULT_LANGUAGE=de-DE
+    volumes:
+      - ./certs:/custom-certs:ro
+    ports:
+      - "5050:5050"
+    restart: unless-stopped

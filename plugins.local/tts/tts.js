@@ -1,27 +1,106 @@
-/* global Plugins, Notify */
+/* global Plugins, Notify, App, xhr */
 
 Plugins.Tts = {
 	_currentUtterance: null,
+	_audioEl: null,
 	_rate: 1.0,
 	_playing: false,
 	_articleId: null,
+	_service: null, // wird beim ersten Aufruf geladen
 
-	speak: function(id) {
-		if (!window.speechSynthesis) {
-			Notify.error('Text-to-Speech wird von diesem Browser nicht unterstützt.');
-			return;
-		}
+	speak: function (id) {
+		// Service-Typ aus dem Button-data-Attribut lesen
+		var btn = document.querySelector('.tts-btn[data-article-id="' + id + '"]');
+		var service = btn ? btn.getAttribute('data-tts-service') : 'browser';
 
-		// Falls gerade derselbe Artikel spricht -> Pause/Resume
+		// Falls gerade derselbe Artikel läuft -> Pause/Resume
 		if (Plugins.Tts._articleId === id && Plugins.Tts._playing) {
 			Plugins.Tts.pause();
 			return;
 		}
 
-		// Laufende Sprachausgabe stoppen
+		// Laufende Wiedergabe stoppen
+		Plugins.Tts.stop();
+
+		if (service === 'server') {
+			Plugins.Tts._speakServer(id);
+		} else {
+			Plugins.Tts._speakBrowser(id);
+		}
+	},
+
+	// ── Server-basiertes TTS (edge-tts / OpenAI) ──────────────────────
+
+	_speakServer: function (id) {
+		Plugins.Tts._articleId = id;
+		Plugins.Tts._playing = true;
+		Plugins.Tts._showPlayer(id, 'server');
+
+		var audioUrl = 'backend.php?op=pluginhandler&plugin=tts&method=stream_audio'
+			+ '&article_id=' + id;
+
+		var audio = new Audio(audioUrl);
+		audio.playbackRate = Plugins.Tts._rate;
+		Plugins.Tts._audioEl = audio;
+
+		var progress = document.getElementById('tts-progress');
+
+		var hasStarted = false;
+
+		audio.addEventListener('loadstart', function () {
+			if (progress) progress.textContent = 'Lädt...';
+		});
+
+		audio.addEventListener('canplay', function () {
+			hasStarted = true;
+			if (progress) progress.textContent = 'Wiedergabe';
+		});
+
+		audio.addEventListener('timeupdate', function () {
+			hasStarted = true;
+			if (progress && audio.duration) {
+				var cur = Plugins.Tts._formatTime(audio.currentTime);
+				var dur = Plugins.Tts._formatTime(audio.duration);
+				progress.textContent = cur + ' / ' + dur;
+			}
+		});
+
+		audio.addEventListener('ended', function () {
+			Plugins.Tts.stop();
+		});
+
+		audio.addEventListener('error', function () {
+			// Fehler nur anzeigen wenn das Audio noch nicht angefangen hat zu spielen
+			if (!hasStarted) {
+				Notify.error('TTS-Server-Fehler. Endpunkt erreichbar?');
+				Plugins.Tts.stop();
+			}
+		});
+
+		audio.play().catch(function () {
+			if (!hasStarted) {
+				Notify.error('Audio-Wiedergabe fehlgeschlagen.');
+				Plugins.Tts.stop();
+			}
+		});
+	},
+
+	_formatTime: function (sec) {
+		var m = Math.floor(sec / 60);
+		var s = Math.floor(sec % 60);
+		return m + ':' + (s < 10 ? '0' : '') + s;
+	},
+
+	// ── Browser-basiertes TTS (Web Speech API) ────────────────────────
+
+	_speakBrowser: function (id) {
+		if (!window.speechSynthesis) {
+			Notify.error('Text-to-Speech wird von diesem Browser nicht unterstützt.');
+			return;
+		}
+
 		window.speechSynthesis.cancel();
 
-		// Artikeltext extrahieren
 		var contentEl = document.querySelector(
 			'#RROW-' + id + ' .content-inner'
 		) || document.querySelector('#content-insert .post .content');
@@ -31,26 +110,22 @@ Plugins.Tts = {
 			return;
 		}
 
-		var text = contentEl.textContent || contentEl.innerText;
-		text = text.trim();
-
+		var text = (contentEl.textContent || contentEl.innerText).trim();
 		if (!text) {
 			Notify.error('Kein Text zum Vorlesen gefunden.');
 			return;
 		}
 
-		// Text in Sätze aufteilen (Web Speech API hat Längenlimit)
 		var sentences = Plugins.Tts._splitText(text);
 
 		Plugins.Tts._articleId = id;
 		Plugins.Tts._playing = true;
-		Plugins.Tts._showPlayer(id);
+		Plugins.Tts._showPlayer(id, 'browser');
 
 		Plugins.Tts._speakSentences(sentences, 0);
 	},
 
-	_splitText: function(text) {
-		// In Abschnitte von ca. 200 Zeichen aufteilen (Satzgrenzen beachten)
+	_splitText: function (text) {
 		var chunks = [];
 		var sentences = text.replace(/([.!?])\s+/g, '$1\n').split('\n');
 
@@ -71,7 +146,7 @@ Plugins.Tts = {
 		return chunks.length > 0 ? chunks : [text.substring(0, 500)];
 	},
 
-	_speakSentences: function(sentences, index) {
+	_speakSentences: function (sentences, index) {
 		if (index >= sentences.length || !Plugins.Tts._playing) {
 			Plugins.Tts.stop();
 			return;
@@ -83,43 +158,59 @@ Plugins.Tts = {
 
 		Plugins.Tts._currentUtterance = utterance;
 
-		// Fortschrittsanzeige aktualisieren
 		var progress = document.getElementById('tts-progress');
 		if (progress) {
 			progress.textContent = (index + 1) + ' / ' + sentences.length;
 		}
 
-		utterance.onend = function() {
+		utterance.onend = function () {
 			Plugins.Tts._speakSentences(sentences, index + 1);
 		};
 
-		utterance.onerror = function() {
+		utterance.onerror = function () {
 			Plugins.Tts.stop();
 		};
 
 		window.speechSynthesis.speak(utterance);
 	},
 
-	pause: function() {
-		if (window.speechSynthesis.speaking) {
-			window.speechSynthesis.pause();
-			Plugins.Tts._playing = false;
+	// ── Steuerung ─────────────────────────────────────────────────────
 
-			var playBtn = document.getElementById('tts-play-btn');
-			if (playBtn) playBtn.textContent = 'play_arrow';
+	pause: function () {
+		if (Plugins.Tts._audioEl) {
+			Plugins.Tts._audioEl.pause();
+		} else if (window.speechSynthesis && window.speechSynthesis.speaking) {
+			window.speechSynthesis.pause();
 		}
+
+		Plugins.Tts._playing = false;
+		var playBtn = document.getElementById('tts-play-btn');
+		if (playBtn) playBtn.textContent = 'play_arrow';
 	},
 
-	resume: function() {
-		window.speechSynthesis.resume();
-		Plugins.Tts._playing = true;
+	resume: function () {
+		if (Plugins.Tts._audioEl) {
+			Plugins.Tts._audioEl.play();
+		} else if (window.speechSynthesis) {
+			window.speechSynthesis.resume();
+		}
 
+		Plugins.Tts._playing = true;
 		var playBtn = document.getElementById('tts-play-btn');
 		if (playBtn) playBtn.textContent = 'pause';
 	},
 
-	stop: function() {
-		window.speechSynthesis.cancel();
+	stop: function () {
+		if (Plugins.Tts._audioEl) {
+			Plugins.Tts._audioEl.pause();
+			Plugins.Tts._audioEl.src = '';
+			Plugins.Tts._audioEl = null;
+		}
+
+		if (window.speechSynthesis) {
+			window.speechSynthesis.cancel();
+		}
+
 		Plugins.Tts._playing = false;
 		Plugins.Tts._currentUtterance = null;
 		Plugins.Tts._articleId = null;
@@ -128,7 +219,7 @@ Plugins.Tts = {
 		if (player) player.remove();
 	},
 
-	togglePlay: function() {
+	togglePlay: function () {
 		if (Plugins.Tts._playing) {
 			Plugins.Tts.pause();
 		} else {
@@ -136,14 +227,21 @@ Plugins.Tts = {
 		}
 	},
 
-	setRate: function(rate) {
+	setRate: function (rate) {
 		Plugins.Tts._rate = parseFloat(rate);
+
+		// Audio-Element: Rate sofort ändern
+		if (Plugins.Tts._audioEl) {
+			Plugins.Tts._audioEl.playbackRate = Plugins.Tts._rate;
+		}
 
 		var rateLabel = document.getElementById('tts-rate-label');
 		if (rateLabel) rateLabel.textContent = Plugins.Tts._rate.toFixed(1) + 'x';
 	},
 
-	_showPlayer: function(id) {
+	// ── Player-UI ─────────────────────────────────────────────────────
+
+	_showPlayer: function (id, mode) {
 		var existing = document.getElementById('tts-player');
 		if (existing) existing.remove();
 
@@ -151,23 +249,24 @@ Plugins.Tts = {
 		player.id = 'tts-player';
 		player.className = 'tts-player';
 
-		// Vorlesen-Icon
+		// Icon
 		var icon = document.createElement('i');
 		icon.className = 'material-icons';
 		icon.textContent = 'volume_up';
 		icon.style.fontSize = '20px';
 		player.appendChild(icon);
 
+		// Label
 		var label = document.createElement('span');
 		label.className = 'tts-player-label';
-		label.textContent = 'Vorlesen';
+		label.textContent = mode === 'server' ? 'Edge TTS' : 'Vorlesen';
 		player.appendChild(label);
 
 		// Fortschritt
 		var progress = document.createElement('span');
 		progress.id = 'tts-progress';
 		progress.className = 'tts-player-progress';
-		progress.textContent = '...';
+		progress.textContent = mode === 'server' ? 'Lädt...' : '...';
 		player.appendChild(progress);
 
 		// Steuerungen
@@ -193,9 +292,8 @@ Plugins.Tts = {
 		var slowerBtn = document.createElement('i');
 		slowerBtn.className = 'material-icons tts-control-btn';
 		slowerBtn.textContent = 'remove';
-		slowerBtn.onclick = function() {
-			var r = Math.max(0.5, Plugins.Tts._rate - 0.25);
-			Plugins.Tts.setRate(r);
+		slowerBtn.onclick = function () {
+			Plugins.Tts.setRate(Math.max(0.5, Plugins.Tts._rate - 0.25));
 		};
 		controls.appendChild(slowerBtn);
 
@@ -210,14 +308,12 @@ Plugins.Tts = {
 		var fasterBtn = document.createElement('i');
 		fasterBtn.className = 'material-icons tts-control-btn';
 		fasterBtn.textContent = 'add';
-		fasterBtn.onclick = function() {
-			var r = Math.min(2.0, Plugins.Tts._rate + 0.25);
-			Plugins.Tts.setRate(r);
+		fasterBtn.onclick = function () {
+			Plugins.Tts.setRate(Math.min(3.0, Plugins.Tts._rate + 0.25));
 		};
 		controls.appendChild(fasterBtn);
 
 		player.appendChild(controls);
-
 		document.body.appendChild(player);
 	}
 };

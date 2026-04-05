@@ -2,6 +2,7 @@ Thumbs.db
 /.env
 /docker-compose.override.yml
 /.app_is_ready
+/certs/
 /messages.mo
 /node_modules
 /locale/**/*.po~
