@@ -1,3 +1,4 @@
+/* ── Highlights im Artikel ────────────────────────── */
 .ann-highlight {
 	border-radius: 2px;
 	padding: 0 1px;
@@ -8,6 +9,29 @@
 	border-bottom: 2px dotted rgba(0, 0, 0, 0.3);
 }
 
+/* ── Hinweis: Annotationen im Volltext ───────────── */
+.ann-fulltext-hint {
+	background: var(--default-bg, #fffde7);
+	border: 1px solid #fff3cd;
+	border-radius: 4px;
+	padding: 6px 10px;
+	margin-bottom: 10px;
+	font-size: 12px;
+	color: var(--default-fg, #333);
+}
+
+/* ── Farbpunkt ───────────────────────────────────── */
+.ann-color-dot {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	margin-right: 6px;
+	vertical-align: middle;
+	flex-shrink: 0;
+}
+
+/* ── Popup ────────────────────────────────────────── */
 .ann-popup {
 	background: var(--default-bg, #fff);
 	border: 1px solid var(--border-default, #ccc);
@@ -16,6 +40,18 @@
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	min-width: 240px;
 	max-width: 350px;
+	color: var(--default-fg, #333);
+}
+
+.ann-popup-preview {
+	font-size: 12px;
+	color: var(--default-fg, #999);
+	font-style: italic;
+	margin-bottom: 8px;
+	padding: 4px 6px;
+	background: rgba(128, 128, 128, 0.08);
+	border-radius: 3px;
+	line-height: 1.4;
 }
 
 .ann-color-row {
@@ -35,7 +71,7 @@
 }
 
 .ann-color-btn:hover {
-	border-color: rgba(0, 0, 0, 0.3);
+	border-color: rgba(128, 128, 128, 0.5);
 }
 
 .ann-color-btn.ann-color-active {
@@ -53,6 +89,8 @@
 	resize: vertical;
 	margin-bottom: 8px;
 	font-family: inherit;
+	color: var(--default-fg, #333);
+	background: var(--default-bg, #fff);
 }
 
 .ann-btn-row {
@@ -62,12 +100,14 @@
 }
 
 .ann-save-btn,
-.ann-cancel-btn {
+.ann-cancel-btn,
+.ann-delete-btn {
 	padding: 4px 12px;
 	border-radius: 4px;
 	border: 1px solid var(--border-default, #ccc);
 	cursor: pointer;
 	font-size: 12px;
+	color: var(--default-fg, #333);
 }
 
 .ann-save-btn {
@@ -76,14 +116,26 @@
 	border-color: var(--color-accent, #257fad);
 }
 
+.ann-delete-btn {
+	background: #e53935;
+	color: #fff;
+	border-color: #e53935;
+}
+
 .ann-cancel-btn {
 	background: transparent;
 }
 
+/* ── Button-Badge ────────────────────────────────── */
+.ann-btn-wrap {
+	display: inline-flex;
+	position: relative;
+}
+
 .ann-count-badge {
 	position: absolute;
-	top: -6px;
-	right: -6px;
+	top: -5px;
+	right: -5px;
 	background: var(--color-accent, #257fad);
 	color: #fff;
 	font-size: 9px;
@@ -94,24 +146,193 @@
 	align-items: center;
 	justify-content: center;
 	line-height: 1;
+	pointer-events: none;
 }
 
-.ann-prefs-list table {
+/* ── Panel-Dialog (ContentPane Popup) ────────────── */
+.ann-panel-table {
 	border-collapse: collapse;
+	border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.ann-prefs-list td {
-	padding: 4px 8px;
-	border-bottom: 1px solid var(--border-default, #eee);
+.ann-panel-table td {
+	padding: 6px 8px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	font-size: 13px;
+	color: #fff;
 }
 
-.ann-prefs-list tr.title td {
+.ann-panel-table tr.title td {
 	font-weight: bold;
-	border-bottom: 2px solid var(--border-default, #ccc);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+	color: rgba(255, 255, 255, 0.7);
+	background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Action-Icons ────────────────────────────────── */
+.ann-actions-cell {
+	white-space: nowrap;
+}
+
+.ann-action-icon {
+	font-size: 18px;
+	cursor: pointer;
+	margin-left: 4px;
+	vertical-align: middle;
+	opacity: 0.7;
+	transition: opacity 0.15s;
+}
+
+.ann-action-icon:hover {
+	opacity: 1;
+}
+
+.ann-delete-icon {
+	color: #e53935;
+}
+
+/* ── Einstellungen: Statistik-Leiste ─────────────── */
+.ann-prefs-stats {
+	padding: 8px 12px;
+	margin-bottom: 12px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid var(--border-default, #e0e0e0);
+	border-radius: 4px;
+	font-size: 13px;
+	color: var(--default-fg, #ccc);
+}
+
+/* ── Einstellungen: Filter + Toolbar ─────────────── */
+.ann-prefs-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.ann-prefs-filters {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.ann-filter-label {
+	font-size: 12px;
+	color: var(--default-fg, #ccc);
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.ann-filter-label input[type="date"],
+.ann-filter-label select {
+	padding: 3px 6px;
+	border: 1px solid var(--border-default, #555);
+	border-radius: 3px;
+	font-size: 12px;
+	background: var(--default-bg, #333);
+	color: var(--default-fg, #ccc);
+}
+
+/* ── Einstellungen: Pagination ───────────────────── */
+.ann-prefs-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	margin-top: 16px;
+	padding: 8px 0;
+}
+
+.ann-page-info {
+	font-size: 13px;
+	color: var(--default-fg, #ccc);
+}
+
+/* ── Einstellungen: Gruppierte Ansicht ───────────── */
+
+.ann-group {
+	margin-bottom: 16px;
+	border: 1px solid var(--border-default, #e0e0e0);
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.ann-group-header {
+	display: flex;
+	align-items: center;
+	padding: 8px 12px;
+	background: rgba(0, 0, 0, 0.03);
+	border-bottom: 1px solid var(--border-default, #e0e0e0);
+}
+
+.ann-group-title {
+	font-weight: bold;
+	font-size: 14px;
+	color: var(--color-accent, #257fad);
+	text-decoration: none;
+}
+
+.ann-group-title:hover {
+	text-decoration: underline;
+}
+
+.ann-group-count {
+	font-size: 12px;
+	color: var(--default-fg, #888);
+	white-space: nowrap;
+	flex-grow: 1;
+}
+
+.ann-group-table {
+	border-collapse: collapse;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	table-layout: fixed;
+}
+
+.ann-group-table td {
+	padding: 5px 12px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	font-size: 13px;
+	color: #fff;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Einheitliche Spaltenbreiten über alle Artikel-Tabellen hinweg */
+.ann-group-table td:nth-child(1) { width: 35%; }
+.ann-group-table td:nth-child(2) { width: 35%; }
+.ann-group-table td:nth-child(3) { width: 15%; }
+.ann-group-table td:nth-child(4) { width: 15%; }
+
+.ann-group-table tr.title td {
+	font-weight: bold;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: rgba(255, 255, 255, 0.7);
+	background: rgba(255, 255, 255, 0.05);
+	border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.ann-group-table .ann-note-cell {
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.ann-group-table .ann-date-cell {
+	white-space: nowrap;
+	font-size: 12px;
 }
 
 .ann-highlight-preview {
 	border-radius: 2px;
 	padding: 1px 3px;
+	color: var(--default-fg, #333);
 }

@@ -32,28 +32,26 @@ class Annotations extends Plugin {
 		return file_get_contents(__DIR__ . "/annotations.css");
 	}
 
-	/**
-	 * Annotationsdaten als data-Attribut am Artikel anhängen (CDM).
-	 * @param array<string, mixed> $article
-	 * @return array<string, mixed>
-	 */
+	function get_prefs_js() {
+		return file_get_contents(__DIR__ . "/annotations_prefs.js");
+	}
+
+	function get_prefs_css() {
+		return file_get_contents(__DIR__ . "/annotations.css");
+	}
+
+	function csrf_ignore($method): bool {
+		return in_array($method, ["export_csv", "export_all_csv"]);
+	}
+
 	function hook_render_article_cdm($article) {
 		return $this->inject_annotations($article);
 	}
 
-	/**
-	 * Annotationsdaten als data-Attribut am Artikel anhängen (Drei-Spalten-Modus).
-	 * @param array<string, mixed> $article
-	 * @return array<string, mixed>
-	 */
 	function hook_render_article($article) {
 		return $this->inject_annotations($article);
 	}
 
-	/**
-	 * @param array<string, mixed> $article
-	 * @return array<string, mixed>
-	 */
 	private function inject_annotations(array $article): array {
 		$id = $article['id'] ?? 0;
 		if (!$id) return $article;
@@ -68,23 +66,13 @@ class Annotations extends Plugin {
 			$annotations[] = $row;
 		}
 
-		if (!empty($annotations)) {
-			$json = htmlspecialchars(json_encode($annotations), ENT_QUOTES);
-			$article['content'] = "<div class='annotations-wrapper' data-annotations='$json'
-				data-article-id='$id'>" . $article['content'] . "</div>";
-		} else {
-			$article['content'] = "<div class='annotations-wrapper'
-				data-annotations='[]' data-article-id='$id'>" . $article['content'] . "</div>";
-		}
+		$json = htmlspecialchars(json_encode($annotations), ENT_QUOTES);
+		$article['content'] = "<div class='annotations-wrapper' data-annotations='$json'
+			data-article-id='$id'>" . $article['content'] . "</div>";
 
 		return $article;
 	}
 
-	/**
-	 * Annotationsanzahl-Badge als Artikelbutton.
-	 * @param array<string, mixed> $line
-	 * @return string
-	 */
 	function hook_article_button($line) {
 		$id = (int) $line['id'];
 
@@ -96,68 +84,215 @@ class Annotations extends Plugin {
 
 		$badge = $count > 0 ? "<span class='ann-count-badge'>$count</span>" : "";
 
-		return "<i class='material-icons ann-btn'
+		return "<span class='ann-btn-wrap'><i class='material-icons'
 			onclick=\"Plugins.Annotations.showPanel(" . $id . ")\"
-			style='cursor: pointer; position: relative'
-			title=\"" . __('Annotationen') . "\">edit_note$badge</i>";
+			style='cursor:pointer'
+			title=\"" . __('Annotationen') . "\">highlight</i>$badge</span>";
 	}
 
-	/**
-	 * Einstellungsseite: Alle Annotationen anzeigen.
-	 */
 	function hook_prefs_tab($args) {
 		if ($args != "prefPrefs") return;
 
-		$sth = $this->pdo->prepare("SELECT a.*, e.title AS article_title
-			FROM ttrss_plugin_annotations a
-			LEFT JOIN ttrss_entries e ON e.id = a.ref_id
-			WHERE a.owner_uid = ?
-			ORDER BY a.created_at DESC
-			LIMIT 200");
-		$sth->execute([$_SESSION['uid']]);
-
 		?>
 		<div dojoType="dijit.layout.AccordionPane"
-			title="<i class='material-icons'>edit_note</i> <?= __('Annotationen') ?>">
+			title="<i class='material-icons'>highlight</i> <?= __('Annotationen') ?>"
+			onShow="Annotations_Prefs.init()">
 
-			<div class="ann-prefs-list">
-				<table width="100%">
-					<tr class="title">
-						<td><?= __('Artikel') ?></td>
-						<td><?= __('Markierter Text') ?></td>
-						<td><?= __('Notiz') ?></td>
-						<td><?= __('Datum') ?></td>
-						<td></td>
-					</tr>
-					<?php while ($row = $sth->fetch()) { ?>
-					<tr>
-						<td><?= htmlspecialchars($row['article_title'] ?? '') ?></td>
-						<td><span class="ann-highlight-preview" style="background: <?= htmlspecialchars($row['color']) ?>">
-							<?= htmlspecialchars(mb_substr($row['highlighted_text'], 0, 80)) ?></span></td>
-						<td><?= htmlspecialchars(mb_substr($row['note'], 0, 100)) ?></td>
-						<td><?= htmlspecialchars($row['created_at']) ?></td>
-						<td>
-							<i class="material-icons" style="cursor:pointer"
-								onclick="Plugins.Annotations.deleteFromPrefs(<?= (int)$row['id'] ?>)"
-								title="<?= __('Löschen') ?>">delete</i>
-						</td>
-					</tr>
-					<?php } ?>
-				</table>
+			<div id="ann-prefs-stats" class="ann-prefs-stats"></div>
+
+			<div class="ann-prefs-toolbar" id="ann-prefs-toolbar">
+				<div class="ann-prefs-filters">
+					<label class="ann-filter-label"><?= __('Von') ?>:
+						<input type="date" id="ann-filter-date-from" onchange="Annotations_Prefs.loadPage(1)">
+					</label>
+					<label class="ann-filter-label"><?= __('Bis') ?>:
+						<input type="date" id="ann-filter-date-to" onchange="Annotations_Prefs.loadPage(1)">
+					</label>
+					<label class="ann-filter-label"><?= __('Domain') ?>:
+						<select id="ann-filter-domain" onchange="Annotations_Prefs.loadPage(1)">
+							<option value=""><?= __('Alle') ?></option>
+						</select>
+					</label>
+					<button class="btn btn-xs" onclick="Annotations_Prefs.resetFilters()">
+						<i class="material-icons">clear</i> <?= __('Filter zurücksetzen') ?>
+					</button>
+				</div>
+				<button class="btn btn-xs" onclick="Annotations_Prefs.exportAllCsv()">
+					<i class="material-icons">download</i> <?= __('Alle exportieren (CSV)') ?>
+				</button>
 			</div>
+
+			<div id="ann-prefs-content"></div>
+
+			<div id="ann-prefs-pagination" class="ann-prefs-pagination"></div>
 		</div>
 		<?php
 	}
 
-	/**
-	 * Annotation speichern (AJAX).
-	 */
+	function get_prefs_data(): void {
+		$page = max(1, (int)clean($_REQUEST['page'] ?? 1));
+		$per_page = 50;
+		$date_from = clean($_REQUEST['date_from'] ?? '');
+		$date_to = clean($_REQUEST['date_to'] ?? '');
+		$domain = clean($_REQUEST['domain'] ?? '');
+
+		// Filter-Bedingungen aufbauen
+		$conditions = ['a.owner_uid = ?'];
+		$params = [$_SESSION['uid']];
+
+		if ($date_from) {
+			$conditions[] = 'a.created_at >= ?::date';
+			$params[] = $date_from;
+		}
+		if ($date_to) {
+			$conditions[] = "a.created_at < (?::date + interval '1 day')";
+			$params[] = $date_to;
+		}
+		if ($domain) {
+			$conditions[] = "e.link LIKE ?";
+			$params[] = '%://' . $domain . '/%';
+		}
+
+		$where = implode(' AND ', $conditions);
+
+		// Gesamtzahlen (ungefiltert)
+		$sth = $this->pdo->prepare("SELECT COUNT(*) as total_annotations,
+			COUNT(DISTINCT a.ref_id) as total_articles
+			FROM ttrss_plugin_annotations a
+			WHERE a.owner_uid = ?");
+		$sth->execute([$_SESSION['uid']]);
+		$totals = $sth->fetch();
+
+		// Gefilterte Zahlen
+		$sth = $this->pdo->prepare("SELECT COUNT(*) as total_annotations,
+			COUNT(DISTINCT a.ref_id) as total_articles
+			FROM ttrss_plugin_annotations a
+			LEFT JOIN ttrss_entries e ON e.id = a.ref_id
+			WHERE $where");
+		$sth->execute($params);
+		$filtered_totals = $sth->fetch();
+
+		// Verfügbare Domains (ungefiltert, für Dropdown)
+		$sth = $this->pdo->prepare("SELECT DISTINCT
+			regexp_replace(e.link, '^https?://([^/]+).*$', '\\1') as domain
+			FROM ttrss_plugin_annotations a
+			LEFT JOIN ttrss_entries e ON e.id = a.ref_id
+			WHERE a.owner_uid = ? AND e.link IS NOT NULL AND e.link != ''
+			ORDER BY domain");
+		$sth->execute([$_SESSION['uid']]);
+		$domains = [];
+		while ($row = $sth->fetch()) {
+			if (!empty($row['domain'])) $domains[] = $row['domain'];
+		}
+
+		// Gruppen mit Annotationszahl (gefiltert)
+		$sth = $this->pdo->prepare("SELECT a.ref_id, COUNT(*) as ann_count,
+			e.title AS article_title, e.link
+			FROM ttrss_plugin_annotations a
+			LEFT JOIN ttrss_entries e ON e.id = a.ref_id
+			WHERE $where
+			GROUP BY a.ref_id, e.title, e.link
+			ORDER BY MAX(a.created_at) DESC");
+		$sth->execute($params);
+
+		$all_groups = [];
+		while ($row = $sth->fetch()) {
+			$all_groups[] = $row;
+		}
+
+		// Paginierung: Gruppen durchlaufen, Annotationen zählen
+		// Sobald ≥50 erreicht, aktuellen Artikel noch fertigstellen, dann neue Seite
+		$pages = [];
+		$current_page_groups = [];
+		$current_count = 0;
+		$page_num = 1;
+
+		foreach ($all_groups as $group) {
+			if ($current_count >= $per_page && !empty($current_page_groups)) {
+				$pages[$page_num] = $current_page_groups;
+				$page_num++;
+				$current_page_groups = [];
+				$current_count = 0;
+			}
+			$current_page_groups[] = $group;
+			$current_count += (int)$group['ann_count'];
+		}
+		if (!empty($current_page_groups)) {
+			$pages[$page_num] = $current_page_groups;
+		}
+
+		$total_pages = count($pages);
+		$page = min($page, max(1, $total_pages));
+
+		// Detail-Annotationen nur für aktuelle Seite laden
+		$groups = [];
+		if (isset($pages[$page])) {
+			$ref_ids = array_map(function($g) { return (int)$g['ref_id']; }, $pages[$page]);
+
+			if (!empty($ref_ids)) {
+				$placeholders = implode(',', array_fill(0, count($ref_ids), '?'));
+
+				$detail_conditions = $conditions;
+				$detail_params = $params;
+				$detail_conditions[] = "a.ref_id IN ($placeholders)";
+				$detail_params = array_merge($detail_params, $ref_ids);
+				$detail_where = implode(' AND ', $detail_conditions);
+
+				$sth = $this->pdo->prepare("SELECT a.id, a.ref_id, a.highlighted_text, a.note, a.color,
+					to_char(a.created_at, 'DD.MM.YYYY HH24:MI') as formatted_date,
+					e.title AS article_title, e.link
+					FROM ttrss_plugin_annotations a
+					LEFT JOIN ttrss_entries e ON e.id = a.ref_id
+					WHERE $detail_where
+					ORDER BY a.ref_id, a.created_at DESC");
+				$sth->execute($detail_params);
+
+				$grouped = [];
+				while ($row = $sth->fetch()) {
+					$ref_id = $row['ref_id'];
+					if (!isset($grouped[$ref_id])) {
+						$grouped[$ref_id] = [
+							'title' => $row['article_title'] ?? 'Unbekannter Artikel',
+							'ref_id' => $ref_id,
+							'link' => $row['link'] ?? '',
+							'annotations' => []
+						];
+					}
+					$grouped[$ref_id]['annotations'][] = [
+						'id' => $row['id'],
+						'highlighted_text' => $row['highlighted_text'],
+						'note' => $row['note'],
+						'color' => $row['color'],
+						'formatted_date' => $row['formatted_date']
+					];
+				}
+
+				// Reihenfolge aus der Gruppen-Abfrage beibehalten
+				foreach ($ref_ids as $rid) {
+					if (isset($grouped[$rid])) {
+						$groups[] = $grouped[$rid];
+					}
+				}
+			}
+		}
+
+		print json_encode([
+			'total_annotations' => (int)$totals['total_annotations'],
+			'total_articles' => (int)$totals['total_articles'],
+			'filtered_annotations' => (int)$filtered_totals['total_annotations'],
+			'filtered_articles' => (int)$filtered_totals['total_articles'],
+			'domains' => $domains,
+			'groups' => $groups,
+			'page' => $page,
+			'total_pages' => $total_pages
+		]);
+	}
+
 	function save_annotation(): void {
 		$ref_id = (int)clean($_REQUEST['ref_id'] ?? 0);
 		$highlighted_text = clean($_REQUEST['highlighted_text'] ?? '');
 		$note = clean($_REQUEST['note'] ?? '');
 		$color_raw = clean($_REQUEST['color'] ?? '#fff3cd');
-		// Farbe auf gültiges Hex-Format einschränken (CSS-Injection verhindern)
 		$color = preg_match('/^#[0-9a-fA-F]{3,8}$/', $color_raw) ? $color_raw : '#fff3cd';
 		$start_offset = (int)clean($_REQUEST['start_offset'] ?? 0);
 		$end_offset = (int)clean($_REQUEST['end_offset'] ?? 0);
@@ -179,9 +314,24 @@ class Annotations extends Plugin {
 		print json_encode(['id' => $id, 'status' => 'ok']);
 	}
 
-	/**
-	 * Annotationen für einen Artikel abrufen (AJAX).
-	 */
+	function update_annotation(): void {
+		$id = (int)clean($_REQUEST['id'] ?? 0);
+		$note = clean($_REQUEST['note'] ?? '');
+		$color_raw = clean($_REQUEST['color'] ?? '#fff3cd');
+		$color = preg_match('/^#[0-9a-fA-F]{3,8}$/', $color_raw) ? $color_raw : '#fff3cd';
+
+		if (!$id) {
+			print json_encode(['error' => 'Fehlende ID']);
+			return;
+		}
+
+		$sth = $this->pdo->prepare("UPDATE ttrss_plugin_annotations
+			SET note = ?, color = ? WHERE id = ? AND owner_uid = ?");
+		$sth->execute([$note, $color, $id, $_SESSION['uid']]);
+
+		print json_encode(['status' => 'ok']);
+	}
+
 	function get_annotations(): void {
 		$ref_id = (int)clean($_REQUEST['article_id'] ?? 0);
 
@@ -198,9 +348,6 @@ class Annotations extends Plugin {
 		print json_encode($result);
 	}
 
-	/**
-	 * Annotation löschen (AJAX).
-	 */
 	function delete_annotation(): void {
 		$id = (int)clean($_REQUEST['id'] ?? 0);
 
@@ -211,9 +358,6 @@ class Annotations extends Plugin {
 		print json_encode(['status' => 'ok']);
 	}
 
-	/**
-	 * Alle Annotationen des Benutzers abrufen (AJAX für Prefs).
-	 */
 	function get_all_annotations(): void {
 		$sth = $this->pdo->prepare("SELECT a.*, e.title AS article_title
 			FROM ttrss_plugin_annotations a
@@ -228,6 +372,96 @@ class Annotations extends Plugin {
 		}
 
 		print json_encode($result);
+	}
+
+	function view_article(): void {
+		$ref_id = (int)clean($_REQUEST['ref_id'] ?? 0);
+
+		$sth = $this->pdo->prepare("SELECT e.title, e.content, e.cached_content, e.link
+			FROM ttrss_entries e
+			WHERE e.id = ? AND EXISTS (
+				SELECT 1 FROM ttrss_user_entries WHERE ref_id = e.id AND owner_uid = ?
+			)");
+		$sth->execute([$ref_id, $_SESSION['uid']]);
+		$row = $sth->fetch();
+
+		if (!$row) {
+			print json_encode(['error' => 'Artikel nicht gefunden']);
+			return;
+		}
+
+		$content = !empty($row['cached_content']) ? $row['cached_content'] : $row['content'];
+		$content = Sanitizer::sanitize($content, false, $_SESSION['uid']);
+
+		print json_encode([
+			'title' => $row['title'],
+			'content' => $content,
+			'link' => $row['link']
+		]);
+	}
+
+	function export_csv(): void {
+		$ref_id = (int)clean($_REQUEST['ref_id'] ?? 0);
+
+		$sth = $this->pdo->prepare("SELECT a.highlighted_text, a.note, a.color,
+			to_char(a.created_at, 'DD.MM.YYYY HH24:MI') as formatted_date,
+			e.title AS article_title, e.link AS article_url
+			FROM ttrss_plugin_annotations a
+			LEFT JOIN ttrss_entries e ON e.id = a.ref_id
+			WHERE a.ref_id = ? AND a.owner_uid = ?
+			ORDER BY a.created_at");
+		$sth->execute([$ref_id, $_SESSION['uid']]);
+
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="annotationen_artikel_' . $ref_id . '.csv"');
+
+		$out = fopen('php://output', 'w');
+		fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+		fputcsv($out, ['Artikel', 'URL', 'Markierter Text', 'Notiz', 'Farbe', 'Datum'], ';');
+
+		while ($row = $sth->fetch()) {
+			fputcsv($out, [
+				$row['article_title'] ?? '',
+				$row['article_url'] ?? '',
+				$row['highlighted_text'],
+				$row['note'],
+				$row['color'],
+				$row['formatted_date']
+			], ';');
+		}
+
+		fclose($out);
+	}
+
+	function export_all_csv(): void {
+		$sth = $this->pdo->prepare("SELECT a.highlighted_text, a.note, a.color,
+			to_char(a.created_at, 'DD.MM.YYYY HH24:MI') as formatted_date,
+			e.title AS article_title, e.link AS article_url
+			FROM ttrss_plugin_annotations a
+			LEFT JOIN ttrss_entries e ON e.id = a.ref_id
+			WHERE a.owner_uid = ?
+			ORDER BY e.title, a.created_at");
+		$sth->execute([$_SESSION['uid']]);
+
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="annotationen_alle.csv"');
+
+		$out = fopen('php://output', 'w');
+		fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+		fputcsv($out, ['Artikel', 'URL', 'Markierter Text', 'Notiz', 'Farbe', 'Datum'], ';');
+
+		while ($row = $sth->fetch()) {
+			fputcsv($out, [
+				$row['article_title'] ?? '',
+				$row['article_url'] ?? '',
+				$row['highlighted_text'],
+				$row['note'],
+				$row['color'],
+				$row['formatted_date']
+			], ';');
+		}
+
+		fclose($out);
 	}
 
 	function api_version() {
