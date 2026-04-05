@@ -27,7 +27,7 @@ class Browser_Extension extends Plugin {
 	/**
 	 * CSRF-Prüfung für öffentliche Methoden überspringen.
 	 */
-	function csrf_ignore(string $method): bool {
+	function csrf_ignore($method): bool {
 		return in_array($method, ["save_article", "check"]);
 	}
 
