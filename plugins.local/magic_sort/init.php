@@ -22,20 +22,19 @@ class Magic_Sort extends Plugin {
 	/**
 	 * Fügt "Magic" zum Sortierungs-Dropdown hinzu.
 	 */
-	function hook_headlines_custom_sort_map($sort_map) {
-		$sort_map['magic'] = __('Magic (Relevanz)');
-		return $sort_map;
+	function hook_headlines_custom_sort_map() {
+		return ['magic' => __('Magic (Relevanz)')];
 	}
 
 	/**
 	 * Liefert das ORDER BY für Magic-Sortierung.
 	 */
-	function hook_headlines_custom_sort_override($order, $options) {
-		if (($options['order_by'] ?? '') === 'magic') {
-			return 'score DESC, date_entered DESC';
+	function hook_headlines_custom_sort_override($order) {
+		if ($order === 'magic') {
+			return ['score DESC, date_entered DESC', false];
 		}
 
-		return $order;
+		return ['', false];
 	}
 
 	/**
