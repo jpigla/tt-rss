@@ -81,7 +81,7 @@ Plugins.Translate = {
 	_showTranslation: function(articleId, data) {
 		var contentEl = document.querySelector(
 			'#RROW-' + articleId + ' .content-inner'
-		) || document.querySelector('#content-insert');
+		) || document.querySelector('#content-insert .post .content');
 
 		if (!contentEl) return;
 
