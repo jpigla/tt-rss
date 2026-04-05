@@ -78,7 +78,7 @@ Plugins.Ai_Summary = {
 		// In Artikel einfügen
 		const article_content = document.querySelector(
 			'#RROW-' + id + ' .content-inner'
-		) || document.querySelector('#content-insert');
+		) || document.querySelector('#content-insert .post .content');
 
 		if (article_content) {
 			article_content.insertBefore(box, article_content.firstChild);
