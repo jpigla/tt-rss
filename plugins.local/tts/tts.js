@@ -24,7 +24,7 @@ Plugins.Tts = {
 		// Artikeltext extrahieren
 		var contentEl = document.querySelector(
 			'#RROW-' + id + ' .content-inner'
-		) || document.querySelector('#content-insert');
+		) || document.querySelector('#content-insert .post .content');
 
 		if (!contentEl) {
 			Notify.error('Artikelinhalt nicht gefunden.');
