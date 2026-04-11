@@ -92,12 +92,13 @@ const ReadwiseTheme = {
 		const infoSpan = ReadwiseTheme.el('span', 'rw-meta-info');
 		let partCount = 0;
 
-		// Favicon + Domain (klickbar → öffnet Feed)
-		if (meta.domain) {
+		// Favicon + Feed-Name (klickbar → öffnet Feed)
+		const feedTitle = row.dataset.origFeedTitle || meta.domain || '';
+		if (feedTitle || meta.domain) {
 			const domainLink = document.createElement('a');
 			domainLink.className = 'rw-meta-domain';
 			domainLink.href = '#';
-			domainLink.title = 'Nur Artikel von ' + meta.domain + ' anzeigen';
+			domainLink.title = 'Nur Artikel von ' + (feedTitle || meta.domain) + ' anzeigen';
 			domainLink.addEventListener('click', function (e) {
 				e.stopPropagation();
 				e.preventDefault();
@@ -121,7 +122,7 @@ const ReadwiseTheme = {
 				domainLink.appendChild(ReadwiseTheme.el('i', 'material-icons rw-meta-icon', 'language'));
 			}
 
-			domainLink.appendChild(document.createTextNode(' ' + meta.domain));
+			domainLink.appendChild(document.createTextNode(' ' + (feedTitle || meta.domain)));
 			infoSpan.appendChild(domainLink);
 			partCount++;
 		}
