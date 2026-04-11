@@ -359,7 +359,7 @@ class Feeds extends Handler_Protected {
 				/* we don't need those */
 
 				foreach (["date_entered", "guid", "last_published", "last_marked", "tag_cache", "favicon_avg_color",
-								"uuid", "label_cache", "yyiw", "num_enclosures"] as $k)
+								"uuid", "label_cache", "yyiw", "num_enclosures", "content_preview"] as $k)
 					unset($line[$k]);
 
 				$reply['content'][] = $line;

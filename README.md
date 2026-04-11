@@ -124,6 +124,7 @@ Dieses Repository basiert auf dem Community-Fork von [tt-rss/tt-rss](https://git
 - **Sicherheitskorrekturen** in 18 Plugins (Input-Validierung, CSRF-Schutz, sichere Shell-Aufrufe)
 - **Feed-Autodetect-Bugfix**: Fehlerbehebung beim Abonnieren von HTML-Seiten und Korrektur von HTML5-Boolean-Attributen in der XML-Verarbeitung
 - **Sticky Artikel-Header mit Lesefortschrittsbalken**: Der Header (Titel, Datum, Tags) bleibt beim Langen beim Scrollen sichtbar; der Fortschrittsbalken ist am unteren Rand des Headers verankert und zeigt den exakten Lesefortschritt von 0–100 %
+- **Textvorschau im Tree Panel entfernt**: Die Inhaltsvorschau (`content_preview`) wird in der Headline-Liste (Tree Panel View) nicht mehr angezeigt und auch nicht mehr per JSON an den Client übertragen. Im CDM-Modus (Combined Mode) bleibt die Vorschau bei eingeklappten Artikeln erhalten.
 
 ## Development and contributing
 
