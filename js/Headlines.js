@@ -588,7 +588,6 @@ const Headlines = {
 				<span class="updated">${hl.updated}</span>
 			</div>
 			<div class="right">
-				<i class="material-icons icon-score" title="${hl.score}" onclick="Article.setScore(${hl.id}, this)">${Article.getScorePic(hl.score)}</i>
 				<span onclick="Feeds.open({feed:${hl.feed_id}})" class="icon-feed" title="${App.escapeHtml(hl.feed_title)}">${Feeds.renderIcon(hl.feed_id, hl.has_icon)}</span>
 			</div>
 			</div>
