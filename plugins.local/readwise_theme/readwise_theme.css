@@ -1192,12 +1192,7 @@ body.ttrss_main .rw-meta-sep {
 	user-select: none;
 }
 
-body.ttrss_main .rw-meta-domain {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	color: var(--rw-text-secondary);
-}
+/* .rw-meta-domain ist jetzt ein <a>-Tag, siehe unten bei CDM-Anpassungen */
 
 body.ttrss_main .rw-meta-favicon {
 	width: 14px;
@@ -1267,17 +1262,7 @@ body.ttrss_main .rw-meta-tag-more {
 	cursor: default;
 }
 
-body.ttrss_main .rw-meta-label {
-	display: inline-block;
-	padding: 1px 8px;
-	border-radius: 3px;
-	font-size: 11px;
-	font-weight: 500;
-	text-decoration: none !important;
-	white-space: nowrap;
-	line-height: 18px;
-	cursor: pointer;
-}
+/* Labels nutzen jetzt die einheitliche .rw-meta-tag Klasse (Theme-konform, nicht bunt) */
 
 /* ─── CDM Expandable — Anpassungen für Zwei-Zeilen-Layout ──── */
 
@@ -1295,9 +1280,43 @@ body.ttrss_main .cdm.expandable[data-rw-enhanced] .excerpt {
 	display: none !important;
 }
 
-/* Updated-Zeit in der Header-Zeile auch ausblenden (ist in Meta-Zeile) */
+/* Updated-Zeit in der Header-Zeile ausblenden */
 body.ttrss_main .cdm[data-rw-enhanced] .header .updated {
 	display: none;
+}
+
+/* Score/Trend-Icons im Header entfernen */
+body.ttrss_main .cdm[data-rw-enhanced] .header .right .icon-score {
+	display: none !important;
+}
+
+/* Favicon/Feed-Icon rechts entfernen (ist jetzt in der Metazeile) */
+body.ttrss_main .cdm[data-rw-enhanced] .header .right .icon-feed {
+	display: none !important;
+}
+
+/* Grid-Span-Icon auch entfernen (nicht im Readwise-Stil) */
+body.ttrss_main .cdm[data-rw-enhanced] .header .right .icon-grid-span {
+	display: none !important;
+}
+
+/* Meta-Zeile als Klickfläche */
+body.ttrss_main .cdm[data-rw-enhanced] .rw-meta-line {
+	cursor: pointer;
+}
+
+/* Domain als klickbarer Link */
+body.ttrss_main a.rw-meta-domain {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--rw-text-secondary) !important;
+	text-decoration: none !important;
+	transition: color var(--rw-transition);
+}
+
+body.ttrss_main a.rw-meta-domain:hover {
+	color: var(--rw-accent) !important;
 }
 
 /* Lesefortschritts-Balken am unteren Rand der Meta-Zeile */

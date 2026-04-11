@@ -11,9 +11,6 @@ class Readwise_Theme extends Plugin {
 			false];
 	}
 
-	/** @var int Wörter pro Minute für Lesezeit-Berechnung */
-	private int $wpm = 200;
-
 	function init($host) {
 		$this->host = $host;
 
@@ -52,20 +49,6 @@ class Readwise_Theme extends Plugin {
 	}
 
 	/**
-	 * Berechnet die Lesezeit in Minuten.
-	 */
-	private function calculate_reading_time(string $content): int {
-		$text = strip_tags($content);
-		$text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
-		$text = trim($text);
-		if (empty($text)) return 0;
-
-		$word_count = str_word_count($text);
-		$minutes = (int) ceil($word_count / $this->wpm);
-		return max(1, $minutes);
-	}
-
-	/**
 	 * Extrahiert die Domain aus einer URL.
 	 */
 	private function extract_domain(string $url): string {
@@ -86,9 +69,6 @@ class Readwise_Theme extends Plugin {
 		$link = $article['link'] ?? '';
 		$domain = $this->extract_domain($link);
 		$author = trim($article['author'] ?? '');
-		$content = $article['content'] ?? '';
-		$reading_time = $this->calculate_reading_time($content);
-		$tags = $article['tags'] ?? [];
 		$labels = $article['labels'] ?? [];
 		$feed_id = $article['feed_id'] ?? 0;
 		$has_icon = $article['has_icon'] ?? false;
@@ -96,8 +76,6 @@ class Readwise_Theme extends Plugin {
 		$meta = [
 			'domain' => $domain,
 			'author' => $author,
-			'reading_time' => $reading_time,
-			'tags' => array_values(array_filter($tags, fn($t) => trim($t) !== '')),
 			'labels' => $labels,
 			'feed_id' => (int) $feed_id,
 			'has_icon' => (bool) $has_icon,

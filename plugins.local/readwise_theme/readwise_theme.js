@@ -1,17 +1,21 @@
 /* ═══════════════════════════════════════════════════════════════
    Readwise Theme — Enhanced Headlines
    ═══════════════════════════════════════════════════════════════
-   Liest die per PHP injizierten Metadaten (JSON in <script>) und
-   baut eine zweite Zeile im CDM/HL-Header: Domain, Autor, Lesezeit, Tags.
+   Zweizeilige CDM-Ansicht im Readwise-Stil:
+   - Zeile 1: Titel (externer Link)
+   - Zeile 2: Domain+Favicon, Autor, Lesezeit, Labels
+   - Accordion: nur ein Eintrag gleichzeitig offen
+   - Lesezeit wird erst nach Content-Unpack berechnet
 
-   Sicherheitshinweis: Alle Texte werden via textContent gesetzt (kein
-   innerHTML mit User-Daten). Die JSON-Metadaten kommen aus dem
-   vertrauenswürdigen PHP-Backend (bereits HTML-escaped).
+   Sicherheit: Alle Texte via textContent (kein innerHTML mit User-Daten).
    ═══════════════════════════════════════════════════════════════ */
 
 'use strict';
 
 const ReadwiseTheme = {
+
+	/** Wörter pro Minute für Lesezeit-Berechnung */
+	WPM: 200,
 
 	/**
 	 * Erzeugt ein DOM-Element mit optionalen Klassen und Textinhalt.
@@ -21,6 +25,17 @@ const ReadwiseTheme = {
 		if (className) e.className = className;
 		if (text) e.textContent = text;
 		return e;
+	},
+
+	/**
+	 * Berechnet die Lesezeit aus DOM-Content (nach Unpack).
+	 */
+	calculateReadingTime: function (contentEl) {
+		if (!contentEl) return 0;
+		const text = (contentEl.textContent || '').trim();
+		if (!text || text.length < 50) return 0;
+		const words = text.split(/\s+/).length;
+		return Math.max(1, Math.ceil(words / ReadwiseTheme.WPM));
 	},
 
 	/**
@@ -36,13 +51,11 @@ const ReadwiseTheme = {
 		// Metadaten laden: entweder aus DOM (expanded) oder aus data-content (packed)
 		let meta = null;
 
-		// 1. Versuch: Script-Tag im DOM (Content bereits entpackt)
 		const metaScript = row.querySelector('script.rw-meta-data');
 		if (metaScript) {
 			try { meta = JSON.parse(metaScript.textContent); } catch (e) { /* weiter */ }
 		}
 
-		// 2. Versuch: Content ist gepackt im data-content Attribut
 		if (!meta && row.dataset.content) {
 			const parser = new DOMParser();
 			const doc = parser.parseFromString(row.dataset.content, 'text/html');
@@ -54,22 +67,44 @@ const ReadwiseTheme = {
 
 		if (!meta) return;
 
-		// Bestehende Elemente im Header ausblenden (Feed-Name, Author)
+		// Bestehende Elemente ausblenden
 		const feedEl = header.querySelector('.feed');
 		const authorEl = header.querySelector('.author');
 		if (feedEl) feedEl.classList.add('rw-hidden');
 		if (authorEl) authorEl.classList.add('rw-hidden');
 
+		// Labels im titleWrap ausblenden (werden in Metazeile verschoben)
+		const labelsInTitle = header.querySelector('.titleWrap .labels');
+		if (labelsInTitle) labelsInTitle.classList.add('rw-hidden');
+
 		// Meta-Zeile aufbauen
 		const metaLine = ReadwiseTheme.el('div', 'rw-meta-line');
-		const infoSpan = ReadwiseTheme.el('span', 'rw-meta-info');
+		const feedId = meta.feed_id || parseInt(row.dataset.origFeedId) || 0;
 
+		// Klick auf Meta-Zeile soll Artikel aufklappen (nicht auf Links)
+		metaLine.addEventListener('click', function (e) {
+			if (e.target.closest('a')) return;
+			e.stopPropagation();
+			const articleId = parseInt(row.dataset.articleId);
+			if (articleId) ReadwiseTheme.toggleArticle(articleId, row);
+		});
+
+		const infoSpan = ReadwiseTheme.el('span', 'rw-meta-info');
 		let partCount = 0;
 
-		// Favicon + Domain
+		// Favicon + Domain (klickbar → öffnet Feed)
 		if (meta.domain) {
-			const domainSpan = ReadwiseTheme.el('span', 'rw-meta-domain');
-			const feedId = meta.feed_id || parseInt(row.dataset.origFeedId) || 0;
+			const domainLink = document.createElement('a');
+			domainLink.className = 'rw-meta-domain';
+			domainLink.href = '#';
+			domainLink.title = 'Nur Artikel von ' + meta.domain + ' anzeigen';
+			domainLink.addEventListener('click', function (e) {
+				e.stopPropagation();
+				e.preventDefault();
+				if (typeof Feeds !== 'undefined' && feedId) {
+					Feeds.open({ feed: feedId });
+				}
+			});
 
 			if (meta.has_icon && feedId) {
 				const img = document.createElement('img');
@@ -81,14 +116,13 @@ const ReadwiseTheme = {
 					? App.getInitParam('icons_url') + '?op=feed_icon&id=' + feedId
 					: 'feed-icons/' + feedId + '.ico');
 				img.onerror = function () { this.style.display = 'none'; };
-				domainSpan.appendChild(img);
+				domainLink.appendChild(img);
 			} else {
-				const icon = ReadwiseTheme.el('i', 'material-icons rw-meta-icon', 'language');
-				domainSpan.appendChild(icon);
+				domainLink.appendChild(ReadwiseTheme.el('i', 'material-icons rw-meta-icon', 'language'));
 			}
 
-			domainSpan.appendChild(document.createTextNode(' ' + meta.domain));
-			infoSpan.appendChild(domainSpan);
+			domainLink.appendChild(document.createTextNode(' ' + meta.domain));
+			infoSpan.appendChild(domainLink);
 			partCount++;
 		}
 
@@ -99,65 +133,137 @@ const ReadwiseTheme = {
 			partCount++;
 		}
 
-		// Lesezeit
-		if (meta.reading_time > 0) {
-			if (partCount > 0) infoSpan.appendChild(ReadwiseTheme.el('span', 'rw-meta-sep', '\u00B7'));
-			const timeSpan = ReadwiseTheme.el('span', 'rw-meta-time');
-			timeSpan.appendChild(ReadwiseTheme.el('i', 'material-icons', 'schedule'));
-			const label = meta.reading_time === 1 ? ' 1 Min.' : ' ' + meta.reading_time + ' Min.';
-			timeSpan.appendChild(document.createTextNode(label));
-			infoSpan.appendChild(timeSpan);
+		// Lesezeit-Platzhalter (wird nach Unpack gefüllt)
+		const timePlaceholder = ReadwiseTheme.el('span', 'rw-meta-time rw-meta-time-pending');
+		timePlaceholder.style.display = 'none';
+		if (partCount > 0) {
+			const sep = ReadwiseTheme.el('span', 'rw-meta-sep rw-meta-time-sep', '\u00B7');
+			sep.style.display = 'none';
+			infoSpan.appendChild(sep);
 		}
+		infoSpan.appendChild(timePlaceholder);
 
 		metaLine.appendChild(infoSpan);
 
-		// Tags als Badges
-		if ((meta.tags && meta.tags.length > 0) || (meta.labels && meta.labels.length > 0)) {
-			const tagsSpan = ReadwiseTheme.el('span', 'rw-meta-tags');
+		// Labels als einheitliche Badges (nicht bunt — Theme-konform)
+		if (meta.labels && meta.labels.length > 0) {
+			const labelsSpan = ReadwiseTheme.el('span', 'rw-meta-tags');
 
-			// Reguläre Tags
-			if (meta.tags) {
-				const maxTags = 4;
-				const visible = meta.tags.slice(0, maxTags);
-				visible.forEach(function (tag) {
-					const a = ReadwiseTheme.el('a', 'rw-meta-tag', tag);
-					a.href = '#';
-					a.onclick = function (e) {
-						e.stopPropagation();
-						e.preventDefault();
-						if (typeof Feeds !== 'undefined') Feeds.open({ feed: tag.trim() });
-					};
-					tagsSpan.appendChild(a);
+			meta.labels.forEach(function (label) {
+				const a = ReadwiseTheme.el('a', 'rw-meta-tag', label[1]);
+				a.href = '#';
+				a.addEventListener('click', function (e) {
+					e.stopPropagation();
+					e.preventDefault();
+					if (typeof Feeds !== 'undefined') Feeds.open({ feed: label[0] });
 				});
+				labelsSpan.appendChild(a);
+			});
 
-				if (meta.tags.length > maxTags) {
-					tagsSpan.appendChild(
-						ReadwiseTheme.el('span', 'rw-meta-tag rw-meta-tag-more', '+' + (meta.tags.length - maxTags))
-					);
-				}
-			}
-
-			// Labels (haben eigene Farben)
-			if (meta.labels) {
-				meta.labels.forEach(function (label) {
-					const a = ReadwiseTheme.el('a', 'rw-meta-label', label[1]);
-					a.href = '#';
-					a.style.color = label[2];
-					a.style.backgroundColor = label[3];
-					a.onclick = function (e) {
-						e.stopPropagation();
-						e.preventDefault();
-						if (typeof Feeds !== 'undefined') Feeds.open({ feed: label[0] });
-					};
-					tagsSpan.appendChild(a);
-				});
-			}
-
-			metaLine.appendChild(tagsSpan);
+			metaLine.appendChild(labelsSpan);
 		}
 
 		// Meta-Zeile nach dem Header einfügen
 		header.insertAdjacentElement('afterend', metaLine);
+
+		// Klick-Handler auf den Header-Bereich (ohne Titel-Link)
+		ReadwiseTheme.setupClickHandler(row, header);
+	},
+
+	/**
+	 * Richtet den Klick-Handler ein: Klick auf Header (nicht Titel) klappt auf/zu.
+	 * Titel-Link bleibt als externer Link erhalten.
+	 */
+	setupClickHandler: function (row, header) {
+		// titleWrap-onclick entfernen (verhindert Standardverhalten)
+		const titleWrap = header.querySelector('.titleWrap');
+		if (titleWrap) {
+			titleWrap.removeAttribute('onclick');
+
+			// Klick auf titleWrap (nicht auf <a class="title">) → Toggle
+			titleWrap.addEventListener('click', function (e) {
+				// Klick auf den Titel-Link → durchlassen (öffnet Original)
+				if (e.target.closest('a.title')) return;
+
+				e.stopPropagation();
+				e.preventDefault();
+				const articleId = parseInt(row.dataset.articleId);
+				if (articleId) ReadwiseTheme.toggleArticle(articleId, row);
+			});
+		}
+
+		// Header left/right Bereiche: Klick auf Icons beibehalten
+		const headerLeft = header.querySelector('.left');
+		if (headerLeft) {
+			headerLeft.addEventListener('click', function (e) {
+				// Nur bei Klick auf den leeren Bereich (nicht Icons/Checkboxen)
+				if (e.target === headerLeft) {
+					e.stopPropagation();
+					const articleId = parseInt(row.dataset.articleId);
+					if (articleId) ReadwiseTheme.toggleArticle(articleId, row);
+				}
+			});
+		}
+	},
+
+	/**
+	 * Accordion-Toggle: Artikel auf-/zuklappen.
+	 * - Wenn der Artikel bereits offen ist → zuklappen
+	 * - Wenn ein anderer offen ist → diesen zuklappen, neuen öffnen
+	 */
+	toggleArticle: function (id, row) {
+		const currentActive = typeof Article !== 'undefined' ? Article.getActive() : 0;
+
+		if (currentActive === id) {
+			// Zuklappen: active entfernen, Content zurückpacken
+			row.classList.remove('active');
+
+			if (typeof Article !== 'undefined' && typeof App !== 'undefined'
+				&& App.isCombinedMode() && !App.getInitParam('cdm_expanded')) {
+				Article.pack(row);
+			}
+
+			// Aktiven Artikel zurücksetzen (kein Artikel mehr aktiv)
+			// Wir setzen post_under_pointer auf false, damit kein Artikel als aktiv gilt
+			if (typeof Article !== 'undefined') {
+				Article.post_under_pointer = false;
+				// Direkt den internen State zurücksetzen, indem wir die active-Klasse entfernen
+				// Article hat keinen expliziten "clearActive", daher reicht das DOM-Update
+			}
+		} else {
+			// Neuen Artikel öffnen (setActive schließt automatisch den vorherigen)
+			if (typeof Article !== 'undefined') {
+				Article.setActive(id);
+			}
+
+			// Lesezeit nach Unpack berechnen
+			ReadwiseTheme.updateReadingTime(row);
+		}
+	},
+
+	/**
+	 * Berechnet und zeigt die Lesezeit nach dem Entpacken des Contents.
+	 */
+	updateReadingTime: function (row) {
+		const timePlaceholder = row.querySelector('.rw-meta-time-pending');
+		const timeSep = row.querySelector('.rw-meta-time-sep');
+		if (!timePlaceholder) return;
+
+		// Kurz warten bis Content entpackt ist
+		setTimeout(function () {
+			const contentInner = row.querySelector('.content-inner');
+			if (!contentInner) return;
+
+			const minutes = ReadwiseTheme.calculateReadingTime(contentInner);
+			if (minutes > 0) {
+				timePlaceholder.appendChild(ReadwiseTheme.el('i', 'material-icons', 'schedule'));
+				const label = minutes === 1 ? ' 1 Min.' : ' ' + minutes + ' Min.';
+				timePlaceholder.appendChild(document.createTextNode(label));
+				timePlaceholder.style.display = '';
+				timePlaceholder.classList.remove('rw-meta-time-pending');
+				if (timeSep) timeSep.style.display = '';
+			}
+		}, 100);
 	},
 
 	/**
@@ -176,10 +282,8 @@ const ReadwiseTheme = {
 		const frame = document.getElementById('headlines-frame');
 		if (!frame) return;
 
-		// Bestehende Zeilen verarbeiten
 		ReadwiseTheme.processExisting();
 
-		// Auf neue Zeilen reagieren
 		const observer = new MutationObserver(function (mutations) {
 			for (const mutation of mutations) {
 				for (const node of mutation.addedNodes) {
@@ -189,7 +293,6 @@ const ReadwiseTheme = {
 						ReadwiseTheme.enhanceRow(node);
 					}
 
-					// Auch Kinder durchsuchen (z.B. bei Container-Einfügungen)
 					if (node.querySelectorAll) {
 						node.querySelectorAll('.cdm:not([data-rw-enhanced])').forEach(function (row) {
 							ReadwiseTheme.enhanceRow(row);
