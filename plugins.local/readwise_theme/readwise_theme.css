@@ -1146,6 +1146,185 @@ body.ttrss_main #filterNewRuleDlg .dijitValidationTextArea:not(.dijitValidationT
 }
 
 
+/* ═══════════════════════════════════════════════════════════════
+   Enhanced Headlines — Readwise-Stil Metazeile
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Verstecke Original-Elemente die in die Meta-Zeile wandern */
+body.ttrss_main .rw-hidden {
+	display: none !important;
+}
+
+/* ─── Meta-Zeile (Zweite Zeile unter dem Titel) ─────────────── */
+
+body.ttrss_main .rw-meta-line {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 2px 8px 6px 36px;
+	font-size: 12px;
+	font-family: var(--rw-font-ui);
+	color: var(--rw-text-muted);
+	line-height: 1.4;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+/* Im expanded-Modus etwas mehr Platz */
+body.ttrss_main .cdm.expanded .rw-meta-line {
+	padding-left: 40px;
+	padding-bottom: 8px;
+}
+
+/* ─── Meta-Info (Domain, Autor, Lesezeit) ───────────────────── */
+
+body.ttrss_main .rw-meta-info {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+body.ttrss_main .rw-meta-sep {
+	color: var(--rw-text-muted);
+	opacity: 0.5;
+	font-size: 10px;
+	user-select: none;
+}
+
+body.ttrss_main .rw-meta-domain {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--rw-text-secondary);
+}
+
+body.ttrss_main .rw-meta-favicon {
+	width: 14px;
+	height: 14px;
+	border-radius: 2px;
+	vertical-align: middle;
+	flex-shrink: 0;
+}
+
+body.ttrss_main .rw-meta-icon {
+	font-size: 14px !important;
+	color: var(--rw-text-muted);
+}
+
+body.ttrss_main .rw-meta-author {
+	color: var(--rw-text-secondary);
+}
+
+body.ttrss_main .rw-meta-time {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	color: var(--rw-text-muted);
+}
+
+body.ttrss_main .rw-meta-time .material-icons {
+	font-size: 13px !important;
+	opacity: 0.7;
+}
+
+/* ─── Tags & Labels ─────────────────────────────────────────── */
+
+body.ttrss_main .rw-meta-tags {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	overflow: hidden;
+	flex-shrink: 1;
+	min-width: 0;
+}
+
+body.ttrss_main .rw-meta-tag {
+	display: inline-block;
+	padding: 1px 8px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--rw-text-secondary) !important;
+	background: var(--rw-bg-elevated);
+	border: 1px solid var(--rw-border);
+	text-decoration: none !important;
+	white-space: nowrap;
+	transition: background var(--rw-transition), border-color var(--rw-transition);
+	line-height: 18px;
+	cursor: pointer;
+}
+
+body.ttrss_main .rw-meta-tag:hover {
+	background: var(--rw-bg-hover);
+	border-color: var(--rw-border-focus);
+	color: var(--rw-text-primary) !important;
+}
+
+body.ttrss_main .rw-meta-tag-more {
+	color: var(--rw-text-muted) !important;
+	font-style: normal;
+	cursor: default;
+}
+
+body.ttrss_main .rw-meta-label {
+	display: inline-block;
+	padding: 1px 8px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 500;
+	text-decoration: none !important;
+	white-space: nowrap;
+	line-height: 18px;
+	cursor: pointer;
+}
+
+/* ─── CDM Expandable — Anpassungen für Zwei-Zeilen-Layout ──── */
+
+/* Titel etwas prominenter */
+body.ttrss_main .cdm.expandable[data-rw-enhanced] .header a.title {
+	font-size: 14px;
+}
+
+body.ttrss_main .cdm.expandable[data-rw-enhanced].Unread .header a.title {
+	font-size: 14px;
+}
+
+/* Excerpt ausblenden wenn Meta-Zeile vorhanden (ersetzt die Preview) */
+body.ttrss_main .cdm.expandable[data-rw-enhanced] .excerpt {
+	display: none !important;
+}
+
+/* Updated-Zeit in der Header-Zeile auch ausblenden (ist in Meta-Zeile) */
+body.ttrss_main .cdm[data-rw-enhanced] .header .updated {
+	display: none;
+}
+
+/* Lesefortschritts-Balken am unteren Rand der Meta-Zeile */
+body.ttrss_main .cdm[data-rw-enhanced] .rw-meta-line {
+	position: relative;
+}
+
+/* Wenn reading_progress aktiv ist: Fortschrittsbalken zum unteren Rand der Zeile */
+body.ttrss_main .cdm[data-rw-enhanced] .rp-progress-container {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 2px;
+	background: transparent;
+	z-index: 1;
+}
+
+body.ttrss_main .cdm[data-rw-enhanced] .rp-progress-bar {
+	background: linear-gradient(90deg,
+		var(--rw-unread, #5c9ce6),
+		var(--rw-accent, #e8a838),
+		#c471ed
+	) !important;
+}
+
+
 /* ─── Responsive ────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
@@ -1153,5 +1332,13 @@ body.ttrss_main #filterNewRuleDlg .dijitValidationTextArea:not(.dijitValidationT
 	body.ttrss_main .post div.content {
 		padding: 0 12px;
 		font-size: 15px;
+	}
+
+	body.ttrss_main .rw-meta-line {
+		padding-left: 12px;
+	}
+
+	body.ttrss_main .rw-meta-tags {
+		display: none;
 	}
 }

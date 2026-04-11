@@ -11,10 +11,15 @@ class Readwise_Theme extends Plugin {
 			false];
 	}
 
+	/** @var int Wörter pro Minute für Lesezeit-Berechnung */
+	private int $wpm = 200;
+
 	function init($host) {
 		$this->host = $host;
 
 		$host->add_hook($host::HOOK_PREFS_TAB, $this);
+		$host->add_hook($host::HOOK_RENDER_ARTICLE_CDM, $this);
+		$host->add_hook($host::HOOK_RENDER_ARTICLE, $this);
 	}
 
 	function get_css() {
@@ -39,19 +44,93 @@ class Readwise_Theme extends Plugin {
 	}
 
 	function get_js() {
-		return "";
+		$enabled = $this->host->get($this, "enabled", "1");
+		$enhanced = $this->host->get($this, "enhanced_headlines", "1");
+		if ($enabled !== "1" || $enhanced !== "1") return "";
+
+		return file_get_contents(__DIR__ . "/readwise_theme.js");
+	}
+
+	/**
+	 * Berechnet die Lesezeit in Minuten.
+	 */
+	private function calculate_reading_time(string $content): int {
+		$text = strip_tags($content);
+		$text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+		$text = trim($text);
+		if (empty($text)) return 0;
+
+		$word_count = str_word_count($text);
+		$minutes = (int) ceil($word_count / $this->wpm);
+		return max(1, $minutes);
+	}
+
+	/**
+	 * Extrahiert die Domain aus einer URL.
+	 */
+	private function extract_domain(string $url): string {
+		$host = parse_url($url, PHP_URL_HOST);
+		if (!$host) return '';
+		return preg_replace('/^www\./', '', $host);
+	}
+
+	/**
+	 * Injiziert Metadaten als JSON-Block in den Artikel-Content.
+	 * Das JavaScript liest diese und baut die Meta-Zeile im Header.
+	 */
+	private function inject_meta(array $article): array {
+		$enabled = $this->host->get($this, "enabled", "1");
+		$enhanced = $this->host->get($this, "enhanced_headlines", "1");
+		if ($enabled !== "1" || $enhanced !== "1") return $article;
+
+		$link = $article['link'] ?? '';
+		$domain = $this->extract_domain($link);
+		$author = trim($article['author'] ?? '');
+		$content = $article['content'] ?? '';
+		$reading_time = $this->calculate_reading_time($content);
+		$tags = $article['tags'] ?? [];
+		$labels = $article['labels'] ?? [];
+		$feed_id = $article['feed_id'] ?? 0;
+		$has_icon = $article['has_icon'] ?? false;
+
+		$meta = [
+			'domain' => $domain,
+			'author' => $author,
+			'reading_time' => $reading_time,
+			'tags' => array_values(array_filter($tags, fn($t) => trim($t) !== '')),
+			'labels' => $labels,
+			'feed_id' => (int) $feed_id,
+			'has_icon' => (bool) $has_icon,
+		];
+
+		// JSON in <script type="application/json"> braucht kein HTML-Escaping.
+		// Einzig '</script>' im JSON muss verhindert werden — JSON_HEX_TAG escaped < und >.
+		$json = json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
+		$article['content'] = "<script type=\"application/json\" class=\"rw-meta-data\">{$json}</script>" . $content;
+
+		return $article;
+	}
+
+	function hook_render_article_cdm($article) {
+		return $this->inject_meta($article);
+	}
+
+	function hook_render_article($article) {
+		return $this->inject_meta($article);
 	}
 
 	function hook_prefs_tab($args) {
 		if ($args != "prefPrefs") return;
 
 		$enabled = $this->host->get($this, "enabled", "1");
+		$enhanced = $this->host->get($this, "enhanced_headlines", "1");
 		$font_size = $this->host->get($this, "font_size", "16");
 		$line_height = $this->host->get($this, "line_height", "1.7");
 		$content_width = $this->host->get($this, "content_width", "720");
 		$sidebar_width = $this->host->get($this, "sidebar_width", "280px");
 
 		$checked = $enabled === "1" ? "checked" : "";
+		$enhanced_checked = $enhanced === "1" ? "checked" : "";
 
 		?>
 		<div dojoType="dijit.layout.AccordionPane"
@@ -76,6 +155,14 @@ class Readwise_Theme extends Plugin {
 						<input dojoType="dijit.form.CheckBox"
 							type="checkbox" name="enabled" <?= $checked ?>>
 						<?= __("Theme aktivieren") ?>
+					</label>
+				</fieldset>
+
+				<fieldset>
+					<label class="checkbox">
+						<input dojoType="dijit.form.CheckBox"
+							type="checkbox" name="enhanced_headlines" <?= $enhanced_checked ?>>
+						<?= __("Erweiterte Headlines (Readwise-Stil mit Metazeile)") ?>
 					</label>
 				</fieldset>
 
@@ -137,6 +224,7 @@ class Readwise_Theme extends Plugin {
 
 	function save(): void {
 		$enabled = clean($_POST["enabled"] ?? "") === "on" ? "1" : "0";
+		$enhanced = clean($_POST["enhanced_headlines"] ?? "") === "on" ? "1" : "0";
 		$font_size = max(12, min(24, (int) clean($_POST["font_size"] ?? "16")));
 		$line_height = clean($_POST["line_height"] ?? "1.7");
 		$content_width = max(400, min(1200, (int) clean($_POST["content_width"] ?? "720")));
@@ -149,6 +237,7 @@ class Readwise_Theme extends Plugin {
 		if (!in_array($sidebar_width, $valid_widths)) $sidebar_width = "280px";
 
 		$this->host->set($this, "enabled", $enabled);
+		$this->host->set($this, "enhanced_headlines", $enhanced);
 		$this->host->set($this, "font_size", $font_size);
 		$this->host->set($this, "line_height", $line_height);
 		$this->host->set($this, "content_width", $content_width);
