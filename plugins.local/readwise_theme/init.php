@@ -84,7 +84,7 @@ class Readwise_Theme extends Plugin {
 		// JSON in <script type="application/json"> braucht kein HTML-Escaping.
 		// Einzig '</script>' im JSON muss verhindert werden — JSON_HEX_TAG escaped < und >.
 		$json = json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
-		$article['content'] = "<script type=\"application/json\" class=\"rw-meta-data\">{$json}</script>" . $content;
+		$article['content'] = "<script type=\"application/json\" class=\"rw-meta-data\">{$json}</script>" . ($article['content'] ?? '');
 
 		return $article;
 	}
