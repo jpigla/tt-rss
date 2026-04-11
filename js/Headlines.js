@@ -570,25 +570,21 @@ const Headlines = {
 				onmouseout="Article.mouseOut(${hl.id})">
 			<div class="left">
 				<input dojoType="dijit.form.CheckBox" type="checkbox" onclick="Headlines.onRowChecked(this)" class='rchk'>
+					<span class="hl-unread-dot" onclick="event.stopPropagation(); Headlines.toggleUnread(${hl.id})" title="Gelesen/Ungelesen umschalten"></span>
 					<i class="marked-pic marked-${hl.id} material-icons" onclick="Headlines.toggleMark(${hl.id})">star</i>
 					<i class="pub-pic pub-${hl.id} material-icons" onclick="Headlines.togglePub(${hl.id})">rss_feed</i>
 			</div>
+			<span onclick="event.stopPropagation(); Feeds.open({feed:${hl.feed_id}})" class="icon-feed hl-favicon" title="Nur Artikel von ${App.escapeHtml(hl.feed_title)} anzeigen">${Feeds.renderIcon(hl.feed_id, hl.has_icon)}</span>
 			<div onclick="return Headlines.click(event, ${hl.id})" class="title">
 				${App.getInitParam("debug_headline_ids") ? `<span class="text-muted small">A: ${hl.id} F: ${hl.feed_id}</span>` : ""}
 				<span data-article-id="${hl.id}" class="hl-content hlMenuAttach">
 					<a class="title" href="${App.escapeHtml(App.sanitizeUrl(hl.link))}">${hl.title}</a>
 					<span class="author">${hl.author}</span>
-					${Article.renderLabels(hl.id, hl.labels)}
 				</span>
 			</div>
-			<span class="feed vfeedMenuAttach" data-feed-id="${hl.feed_id}">
-				<a title="${__('Open site')}" style="background : ${hl.feed_bg_color}" target="_blank" rel="noopener noreferrer" href="${App.escapeHtml(App.sanitizeUrl(hl.site_url))}">${hl.feed_title}</a>
-			</span>
+			${Article.renderLabels(hl.id, hl.labels)}
 			<div title="${hl.imported}">
 				<span class="updated">${hl.updated}</span>
-			</div>
-			<div class="right">
-				<span onclick="Feeds.open({feed:${hl.feed_id}})" class="icon-feed" title="${App.escapeHtml(hl.feed_title)}">${Feeds.renderIcon(hl.feed_id, hl.has_icon)}</span>
 			</div>
 			</div>
 		`;

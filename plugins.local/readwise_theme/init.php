@@ -37,13 +37,25 @@ class Readwise_Theme extends Plugin {
 			--rw-sidebar-width: {$sidebar_width};
 		}\n";
 
+		$hide_published = $this->host->get($this, "hide_published", "0");
+		if ($hide_published === "1") {
+			$css .= "
+			/* Veröffentlichte Artikel ausblenden */
+			body.ttrss_main #feeds-holder #feedTree .dijitTreeRow[data-feed-id=\"-2\"][data-is-cat=\"false\"] {
+				display: none !important;
+			}
+			body.ttrss_main .hl .left i.pub-pic,
+			body.ttrss_main .cdm .header .left i.pub-pic {
+				display: none !important;
+			}\n";
+		}
+
 		return $css;
 	}
 
 	function get_js() {
 		$enabled = $this->host->get($this, "enabled", "1");
-		$enhanced = $this->host->get($this, "enhanced_headlines", "1");
-		if ($enabled !== "1" || $enhanced !== "1") return "";
+		if ($enabled !== "1") return "";
 
 		return file_get_contents(__DIR__ . "/readwise_theme.js");
 	}
@@ -107,8 +119,11 @@ class Readwise_Theme extends Plugin {
 		$content_width = $this->host->get($this, "content_width", "720");
 		$sidebar_width = $this->host->get($this, "sidebar_width", "280px");
 
+		$hide_published = $this->host->get($this, "hide_published", "0");
+
 		$checked = $enabled === "1" ? "checked" : "";
 		$enhanced_checked = $enhanced === "1" ? "checked" : "";
+		$hide_published_checked = $hide_published === "1" ? "checked" : "";
 
 		?>
 		<div dojoType="dijit.layout.AccordionPane"
@@ -141,6 +156,14 @@ class Readwise_Theme extends Plugin {
 						<input dojoType="dijit.form.CheckBox"
 							type="checkbox" name="enhanced_headlines" <?= $enhanced_checked ?>>
 						<?= __("Erweiterte Headlines (Readwise-Stil mit Metazeile)") ?>
+					</label>
+				</fieldset>
+
+				<fieldset>
+					<label class="checkbox">
+						<input dojoType="dijit.form.CheckBox"
+							type="checkbox" name="hide_published" <?= $hide_published_checked ?>>
+						<?= __("Veröffentlichte Artikel ausblenden (Ordner + Icon)") ?>
 					</label>
 				</fieldset>
 
@@ -214,8 +237,11 @@ class Readwise_Theme extends Plugin {
 		$valid_widths = ["240px", "280px", "320px", "360px"];
 		if (!in_array($sidebar_width, $valid_widths)) $sidebar_width = "280px";
 
+		$hide_published = clean($_POST["hide_published"] ?? "") === "on" ? "1" : "0";
+
 		$this->host->set($this, "enabled", $enabled);
 		$this->host->set($this, "enhanced_headlines", $enhanced);
+		$this->host->set($this, "hide_published", $hide_published);
 		$this->host->set($this, "font_size", $font_size);
 		$this->host->set($this, "line_height", $line_height);
 		$this->host->set($this, "content_width", $content_width);

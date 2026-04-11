@@ -264,6 +264,9 @@ const ReadwiseTheme = {
 				timePlaceholder.classList.remove('rw-meta-time-pending');
 				if (timeSep) timeSep.style.display = '';
 			}
+
+			// Enclosure-Fallback prüfen
+			ReadwiseTheme.handleEnclosureFallback(contentInner);
 		}, 100);
 	},
 
@@ -279,7 +282,104 @@ const ReadwiseTheme = {
 	/**
 	 * MutationObserver für dynamisch nachgeladene Headlines.
 	 */
+	/** Zielname für den Starred-Ordner */
+	STARRED_NAME: 'Später lesen',
+
+	/** Originalnamen, die ersetzt werden */
+	STARRED_ORIGINALS: ['Starred articles', 'Markierte Artikel', 'Gespeicherte Artikel'],
+
+	/**
+	 * Benennt "Starred articles" überall in "Später lesen" um.
+	 * Beobachtet Feed-Tree und Toolbar dauerhaft.
+	 */
+	renameStarredFolder: function () {
+		var self = ReadwiseTheme;
+
+		var rename = function () {
+			// Feed-Tree Label
+			var row = document.querySelector('#feedTree .dijitTreeRow[data-feed-id="-1"][data-is-cat="false"]');
+			if (row) {
+				var label = row.querySelector('.dijitTreeLabel');
+				if (label && label.textContent !== self.STARRED_NAME && self.STARRED_ORIGINALS.indexOf(label.textContent) !== -1) {
+					label.textContent = self.STARRED_NAME;
+				}
+			}
+
+			// Toolbar feed_title (span und a)
+			document.querySelectorAll('.feed_title').forEach(function (el) {
+				if (self.STARRED_ORIGINALS.indexOf(el.textContent) !== -1) {
+					el.textContent = self.STARRED_NAME;
+				}
+			});
+
+			// Dojo-Dialoge (Titel, Header, Content)
+			document.querySelectorAll('.dijitDialogTitle, .dijitDialog header, .dijitDialog .dijitDialogPaneContent header').forEach(function (el) {
+				self.STARRED_ORIGINALS.forEach(function (orig) {
+					if (el.textContent.indexOf(orig) !== -1) {
+						el.childNodes.forEach(function (node) {
+							if (node.nodeType === Node.TEXT_NODE && node.textContent.indexOf(orig) !== -1) {
+								node.textContent = node.textContent.replace(orig, self.STARRED_NAME);
+							}
+						});
+						// Falls kein Text-Node direkt, innerHTML-Ersetzung als Fallback
+						if (el.textContent.indexOf(orig) !== -1) {
+							el.textContent = el.textContent.replace(orig, self.STARRED_NAME);
+						}
+					}
+				});
+			});
+		};
+
+		// Sofort und dann per Observer
+		rename();
+
+		var obs = new MutationObserver(rename);
+		obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+	},
+
+	/**
+	 * Prüft ob ein Artikel Content-Bilder hat. Falls nicht, werden Enclosure-Bilder angezeigt.
+	 */
+	handleEnclosureFallback: function (container) {
+		if (!container) return;
+		const enclosures = container.querySelector('.attachments-inline');
+		if (!enclosures) return;
+
+		// Bilder im Content zählen (ohne die in .attachments-inline)
+		const contentImages = container.querySelectorAll('img:not(.attachments-inline img)');
+		const hasContentImages = Array.from(contentImages).some(function (img) {
+			return !img.closest('.attachments-inline');
+		});
+
+		if (!hasContentImages) {
+			enclosures.classList.add('rw-show-enclosures');
+		}
+	},
+
+	/**
+	 * Escape-Taste schließt den geöffneten Artikel.
+	 */
+	bindEscapeClose: function () {
+		document.addEventListener('keydown', function (e) {
+			if (e.key !== 'Escape') return;
+			if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+
+			if (typeof App !== 'undefined' && typeof Article !== 'undefined') {
+				if (App.isCombinedMode()) {
+					Article.cdmUnsetActive();
+				} else {
+					Article.close();
+				}
+				e.stopPropagation();
+				e.preventDefault();
+			}
+		});
+	},
+
 	init: function () {
+		ReadwiseTheme.renameStarredFolder();
+		ReadwiseTheme.bindEscapeClose();
+
 		const frame = document.getElementById('headlines-frame');
 		if (!frame) return;
 
@@ -304,6 +404,16 @@ const ReadwiseTheme = {
 		});
 
 		observer.observe(frame, { childList: true, subtree: true });
+
+		// 3-Panel: Enclosure-Fallback für .post-Ansicht
+		const contentInsert = document.getElementById('content-insert');
+		if (contentInsert) {
+			const postObserver = new MutationObserver(function () {
+				const content = contentInsert.querySelector('.post div.content');
+				if (content) ReadwiseTheme.handleEnclosureFallback(content);
+			});
+			postObserver.observe(contentInsert, { childList: true, subtree: true });
+		}
 	}
 };
 

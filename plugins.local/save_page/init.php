@@ -5,8 +5,8 @@ class Save_Page extends Plugin {
 	private $host;
 
 	function about() {
-		return [1.0,
-			"Beliebige Webseiten als Artikel im Veröffentlicht-Feed speichern",
+		return [1.1,
+			"Beliebige Webseiten per URL als Artikel speichern (erscheint in Gespeicherte Artikel)",
 			"admin",
 			false];
 	}
@@ -84,7 +84,7 @@ JS;
 		return "<i class='material-icons'
 			style='cursor: pointer'
 			onclick=\"Plugins.SavePage.showDialog()\"
-			title=\"Seite speichern\">save</i>";
+			title=\"URL speichern\">add_link</i>";
 	}
 
 	function save() : void {
@@ -127,6 +127,15 @@ JS;
 		$result = Article::_create_published_article($title, $url, $content, '', $_SESSION['uid']);
 
 		if ($result) {
+			// Zusätzlich als markiert (gespeichert) kennzeichnen
+			$pdo = Db::pdo();
+			$guid = 'SHA1:' . sha1("ttshared:" . $url . $_SESSION['uid']);
+
+			$sth = $pdo->prepare("UPDATE ttrss_user_entries SET marked = true, last_marked = NOW()
+				WHERE ref_id = (SELECT id FROM ttrss_entries WHERE guid = ? LIMIT 1)
+				AND owner_uid = ?");
+			$sth->execute([$guid, $_SESSION['uid']]);
+
 			print json_encode(['message' => 'Seite erfolgreich gespeichert: ' . $title]);
 		} else {
 			print json_encode(['error' => 'Fehler beim Speichern der Seite.']);

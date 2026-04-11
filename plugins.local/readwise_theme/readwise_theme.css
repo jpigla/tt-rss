@@ -163,11 +163,16 @@ body.ttrss_main #toolbar-frame #toolbar i.log-alert {
 }
 
 body.ttrss_main #toolbar-frame #toolbar #feed_current_unread {
-	background: var(--rw-accent);
-	border-color: var(--rw-accent);
-	color: var(--rw-bg-deep);
+	background: var(--rw-bg-elevated) !important;
+	border-color: var(--rw-border) !important;
+	color: var(--rw-text-muted) !important;
+	font-size: 10px;
 	font-weight: 600;
-	border-radius: var(--rw-radius-sm);
+	border-radius: 10px;
+	min-width: 20px;
+	height: 16px;
+	line-height: 16px;
+	padding: 0 5px;
 }
 
 /* Toolbar Dijit Selects */
@@ -234,6 +239,21 @@ body.ttrss_main #feeds-holder #feedTree .dijitTreeNode .dijitTreeRow.dijitTreeRo
 body.ttrss_main #feeds-holder #feedTree .dijitTreeRow .counterNode {
 	font-size: 10px;
 	font-weight: 600;
+	border-radius: 0;
+	min-width: auto;
+	height: auto;
+	line-height: normal;
+	padding: 0;
+	background: transparent !important;
+	border-color: transparent !important;
+	color: var(--rw-text-muted) !important;
+	text-align: center;
+}
+
+body.ttrss_main #feeds-holder #feedTree .dijitTreeRow .counterNode.unread {
+	background: var(--rw-bg-elevated) !important;
+	border-color: var(--rw-border) !important;
+	color: var(--rw-text-muted) !important;
 	border-radius: 10px;
 	min-width: 20px;
 	height: 16px;
@@ -241,34 +261,29 @@ body.ttrss_main #feeds-holder #feedTree .dijitTreeRow .counterNode {
 	padding: 0 5px;
 }
 
-body.ttrss_main #feeds-holder #feedTree .dijitTreeRow .counterNode.unread {
-	background: var(--rw-accent) !important;
-	border-color: var(--rw-accent) !important;
-	color: var(--rw-bg-deep) !important;
-}
-
 body.ttrss_main #feeds-holder #feedTree .dijitTreeRow .counterNode.aux {
-	background: var(--rw-bg-elevated) !important;
-	border-color: var(--rw-border) !important;
+	background: transparent !important;
+	border-color: transparent !important;
 	color: var(--rw-text-muted) !important;
 }
 
 body.ttrss_main #feeds-holder #feedTree .dijitTreeRow .counterNode.marked {
 	background: transparent !important;
-	border-color: var(--rw-marked) !important;
-	color: var(--rw-marked) !important;
+	border-color: transparent !important;
+	color: var(--rw-text-muted) !important;
 }
 
 body.ttrss_main #feeds-holder #feedTree .dijitTreeRow .counterNode.published {
 	background: transparent !important;
-	border-color: var(--rw-published) !important;
-	color: var(--rw-published) !important;
+	border-color: transparent !important;
+	color: var(--rw-text-muted) !important;
 }
 
 /* Fresh-Feed Spezial-Counter */
 body.ttrss_main #feeds-holder #feedTree .dijitTreeRow[data-feed-id="-3"][data-is-cat="false"] .counterNode.unread {
-	background: var(--rw-success) !important;
-	border-color: var(--rw-success) !important;
+	background: transparent !important;
+	border-color: transparent !important;
+	color: var(--rw-text-muted) !important;
 }
 
 /* Sidebar-Icons */
@@ -372,11 +387,48 @@ body.ttrss_main .hl.Selected span {
 }
 
 body.ttrss_main .hl .author {
-	color: var(--rw-text-muted) !important;
+	display: none !important;
+}
+
+/* Unread-Dot (blauer Punkt für Gelesen/Ungelesen) */
+body.ttrss_main .hl .hl-unread-dot {
+	width: 8px;
+	height: 8px;
+	min-width: 8px;
+	min-height: 8px;
+	border-radius: 50%;
+	background: var(--rw-border);
+	cursor: pointer;
+	margin: 0 4px;
+	transition: background var(--rw-transition);
+}
+
+body.ttrss_main .hl .hl-unread-dot:hover {
+	background: rgba(74, 158, 237, 0.5);
+	transform: scale(1.3);
+}
+
+body.ttrss_main .hl.Unread .hl-unread-dot {
+	background: #4a9eed;
+}
+
+body.ttrss_main .hl.Unread .hl-unread-dot:hover {
+	background: #6bb3f5;
+	transform: scale(1.3);
+}
+
+/* Labels in der hl-Zeile (links neben dem Datum) */
+body.ttrss_main .hl > .labels {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+	margin-right: 8px;
 }
 
 body.ttrss_main .hl .updated {
 	color: var(--rw-text-muted) !important;
+	padding-right: 8px !important;
 }
 
 body.ttrss_main .hl .feed a {
@@ -389,6 +441,31 @@ body.ttrss_main .hl .feed a:hover {
 
 body.ttrss_main .hl .right i.material-icons {
 	color: var(--rw-text-muted) !important;
+}
+
+/* Favicon vor dem Titel als Feed-Filter */
+body.ttrss_main .hl .hl-favicon {
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	padding: 0 4px;
+	flex-shrink: 0;
+	opacity: 0.7;
+	transition: opacity var(--rw-transition);
+}
+
+body.ttrss_main .hl .hl-favicon:hover {
+	opacity: 1;
+}
+
+/* Feed-Label (farbig) in der hl-Zeile ausblenden */
+body.ttrss_main .hl .feed {
+	display: none !important;
+}
+
+/* Altes .right-Div entfernen (Favicon ist jetzt vor dem Titel) */
+body.ttrss_main .hl .right {
+	display: none !important;
 }
 
 /* Invertierung für hl.active/Selected entfernen */
@@ -562,19 +639,72 @@ body.ttrss_main #headlines-frame .cdm.expandable.active .title {
 /* ─── Artikelinhalt (Content) ──────────────────────────────── */
 
 body.ttrss_main .cdm .content-inner {
-	font-family: var(--rw-font-reading);
+	font-family: var(--rw-font-ui);
 	font-size: var(--rw-font-size-content);
 	line-height: var(--rw-line-height);
 	color: var(--rw-text-primary);
 	max-width: var(--rw-content-max-width);
 	margin: 20px auto !important;
 	padding: 0 16px;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+body.ttrss_main .cdm .content-inner * {
+	max-width: 100% !important;
+	box-sizing: border-box;
+}
+
+body.ttrss_main .cdm .content-inner p,
+body.ttrss_main .cdm .content-inner blockquote,
+body.ttrss_main .cdm .content-inner figure,
+body.ttrss_main .cdm .content-inner ul,
+body.ttrss_main .cdm .content-inner ol {
+	margin-bottom: 16px;
 }
 
 body.ttrss_main .cdm .content-inner img,
-body.ttrss_main .cdm .content-inner video {
+body.ttrss_main .cdm .content-inner video,
+body.ttrss_main .cdm .content-inner iframe {
+	max-width: 100% !important;
+	width: auto !important;
+	height: auto !important;
 	border-radius: var(--rw-radius-md);
-	margin: 12px 0;
+	margin: 16px 0;
+	box-sizing: border-box;
+	float: none !important;
+	display: block;
+}
+
+body.ttrss_main .cdm .content-inner .attachments {
+	margin-top: 24px;
+}
+
+/* Enclosure-Bilder standardmäßig ausblenden (Fallback per JS) */
+body.ttrss_main .cdm .content-inner .attachments-inline img {
+	display: none !important;
+}
+
+body.ttrss_main .cdm .content-inner .attachments-inline.rw-show-enclosures img {
+	display: block !important;
+}
+
+body.ttrss_main .post div.content .attachments-inline img {
+	display: none !important;
+}
+
+body.ttrss_main .post div.content .attachments-inline.rw-show-enclosures img {
+	display: block !important;
+}
+
+body.ttrss_main .cdm .content-inner table,
+body.ttrss_main .cdm .content-inner pre,
+body.ttrss_main .cdm .content-inner figure,
+body.ttrss_main .cdm .content-inner blockquote,
+body.ttrss_main .cdm .content-inner .attachments-inline {
+	max-width: 100% !important;
+	overflow-x: auto;
+	box-sizing: border-box;
 }
 
 body.ttrss_main .cdm .content-inner a {
@@ -612,19 +742,55 @@ body.ttrss_main .post .header i.material-icons {
 }
 
 body.ttrss_main .post div.content {
-	font-family: var(--rw-font-reading);
+	font-family: var(--rw-font-ui);
 	font-size: var(--rw-font-size-content);
 	line-height: var(--rw-line-height);
 	color: var(--rw-text-primary);
 	max-width: var(--rw-content-max-width);
 	margin: 0 auto;
 	padding: 24px 20px !important;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+body.ttrss_main .post div.content * {
+	max-width: 100% !important;
+	box-sizing: border-box;
+}
+
+body.ttrss_main .post div.content p,
+body.ttrss_main .post div.content blockquote,
+body.ttrss_main .post div.content figure,
+body.ttrss_main .post div.content ul,
+body.ttrss_main .post div.content ol {
+	margin-bottom: 16px;
 }
 
 body.ttrss_main .post div.content img,
-body.ttrss_main .post div.content video {
+body.ttrss_main .post div.content video,
+body.ttrss_main .post div.content iframe {
+	max-width: 100% !important;
+	width: auto !important;
+	height: auto !important;
 	border-radius: var(--rw-radius-md);
-	margin: 12px 0;
+	margin: 16px 0;
+	box-sizing: border-box;
+	float: none !important;
+	display: block;
+}
+
+body.ttrss_main .post div.content .attachments {
+	margin-top: 24px;
+}
+
+body.ttrss_main .post div.content table,
+body.ttrss_main .post div.content pre,
+body.ttrss_main .post div.content figure,
+body.ttrss_main .post div.content blockquote,
+body.ttrss_main .post div.content .attachments-inline {
+	max-width: 100% !important;
+	overflow-x: auto;
+	box-sizing: border-box;
 }
 
 body.ttrss_main .post div.content a {
@@ -732,9 +898,36 @@ body.ttrss_main i.pub-pic {
 	transition: color var(--rw-transition);
 }
 
+/* Stern → Lesezeichen-Icon */
+body.ttrss_main i.marked-pic {
+	font-size: 0 !important;
+}
+
+body.ttrss_main i.marked-pic::before {
+	content: 'bookmark_border';
+	font-family: 'Material Icons';
+	font-size: 21px;
+}
+
+body.ttrss_main .cdm.marked .left i.marked-pic::before,
+body.ttrss_main .hl.marked .left i.marked-pic::before {
+	content: 'bookmark';
+}
+
 body.ttrss_main .cdm.marked .left i.marked-pic,
 body.ttrss_main .hl.marked .left i.marked-pic {
 	color: var(--rw-marked) !important;
+}
+
+/* Sidebar: Stern-Icon im Feed-Tree → Lesezeichen */
+body.ttrss_main #feeds-holder #feedTree .dijitTreeRow[data-feed-id="-1"][data-is-cat="false"] i.icon.icon-star {
+	font-size: 0 !important;
+}
+
+body.ttrss_main #feeds-holder #feedTree .dijitTreeRow[data-feed-id="-1"][data-is-cat="false"] i.icon.icon-star::before {
+	content: 'bookmark';
+	font-family: 'Material Icons';
+	font-size: 18px;
 }
 
 body.ttrss_main .cdm.published .left i.pub-pic,
@@ -759,13 +952,22 @@ body.ttrss_main i.icon-grid-span {
 /* ─── Labels & Tags ─────────────────────────────────────────── */
 
 body.ttrss_main .label {
-	background: var(--rw-accent-muted) !important;
-	color: var(--rw-accent) !important;
-	border-radius: var(--rw-radius-sm);
-	font-size: 10px;
-	font-weight: 600;
-	letter-spacing: 0.03em;
-	padding: 2px 6px;
+	background: var(--rw-bg-elevated) !important;
+	color: var(--rw-text-secondary) !important;
+	border: 1px solid var(--rw-border) !important;
+	border-radius: 4px;
+	font-size: 11px;
+	font-weight: 500;
+	letter-spacing: normal;
+	padding: 1px 8px;
+	line-height: 18px;
+	transition: background var(--rw-transition), border-color var(--rw-transition);
+}
+
+body.ttrss_main .label:hover {
+	background: var(--rw-bg-hover) !important;
+	border-color: var(--rw-border-focus) !important;
+	color: var(--rw-text-primary) !important;
 }
 
 body.ttrss_main .cdm .footer .tags {
@@ -1362,3 +1564,15 @@ body.ttrss_main .cdm[data-rw-enhanced] .rp-progress-bar {
 		display: none;
 	}
 }
+
+/* ─── URL-gespeicherte Artikel: anderes Icon ───────────────── */
+
+/* published + marked = per URL gespeichert → add_link Icon */
+body.ttrss_main .hl.marked.published i.marked-pic::before {
+	content: 'add_link';
+}
+
+body.ttrss_main .cdm.marked.published .left i.marked-pic::before {
+	content: 'add_link';
+}
+
