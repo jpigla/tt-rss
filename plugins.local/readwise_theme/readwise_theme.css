@@ -1280,9 +1280,10 @@ body.ttrss_main .cdm.expandable[data-rw-enhanced] .excerpt {
 	display: none !important;
 }
 
-/* Updated-Zeit in der Header-Zeile ausblenden */
+/* Updated-Zeit im Header beibehalten, aber dezent stylen */
 body.ttrss_main .cdm[data-rw-enhanced] .header .updated {
-	display: none;
+	color: var(--rw-text-muted) !important;
+	font-size: 11px;
 }
 
 /* Score/Trend-Icons im Header entfernen */
