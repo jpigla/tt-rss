@@ -1,3 +1,5 @@
+/* ─── Warnhinweis ──────────────────────────────────────────────────── */
+
 .nf-warning {
 	background: #fff3cd;
 	border: 1px solid #ffc107;
@@ -13,4 +15,127 @@
 .nf-warning .material-icons {
 	color: #856404;
 	font-size: 20px;
+}
+
+/* ─── Tabellen in den Einstellungen ───────────────────────────────── */
+
+.nf-table {
+	border-collapse: collapse;
+	margin: 8px 0 24px 0;
+}
+
+.nf-table tr.title td {
+	font-weight: bold;
+	border-bottom: 2px solid var(--border-default, #ccc);
+	padding: 6px 8px;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--fg-secondary, #666);
+}
+
+.nf-table td {
+	padding: 8px;
+	border-bottom: 1px solid var(--border-default, #eee);
+	vertical-align: middle;
+	font-size: 13px;
+}
+
+.nf-table tr:hover {
+	background: var(--bg-hover, rgba(0, 0, 0, 0.03));
+}
+
+.nf-subs-table td:first-child {
+	min-width: 180px;
+}
+
+.nf-table .text-muted,
+p.text-muted {
+	color: var(--fg-secondary, #999);
+	font-style: italic;
+}
+
+.nf-table code {
+	background: var(--bg-secondary, #f5f5f5);
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-size: 12px;
+}
+
+/* ─── Absender-Banner im Artikel ──────────────────────────────────── */
+
+.newsletter-sender-info {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	margin: 0 0 16px 0;
+	background: var(--bg-secondary, #f8f9fa);
+	border: 1px solid var(--border-default, #e0e0e0);
+	border-radius: 8px;
+	font-size: 13px;
+	flex-wrap: wrap;
+}
+
+.newsletter-sender-info > .material-icons:first-child {
+	color: var(--accent, #1a73e8);
+	font-size: 20px;
+}
+
+.nsi-name {
+	font-weight: 600;
+	color: var(--fg-primary, #333);
+}
+
+.nsi-email {
+	color: var(--fg-secondary, #666);
+	font-size: 12px;
+}
+
+.nsi-domain {
+	color: var(--fg-secondary, #999);
+	font-size: 12px;
+	padding: 2px 8px;
+	background: var(--bg-tertiary, #eee);
+	border-radius: 10px;
+}
+
+.nsi-unsubscribe {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--fg-secondary, #888);
+	font-size: 12px;
+	text-decoration: none;
+	padding: 4px 10px;
+	border-radius: 4px;
+	transition: background 0.15s, color 0.15s;
+}
+
+.nsi-unsubscribe:hover {
+	background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+	color: var(--fg-primary, #333);
+}
+
+.nsi-unsubscribe .material-icons {
+	font-size: 16px;
+}
+
+/* ─── Newsletter-Content ──────────────────────────────────────────── */
+
+/* Basis-Styles für Newsletter-Inhalte, da class-Attribute entfernt werden */
+.cdm .newsletter-sender-info + * {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+.cdm .newsletter-sender-info ~ table {
+	max-width: 100%;
+	height: auto !important;
+}
+
+.cdm .newsletter-sender-info ~ img {
+	max-width: 100%;
+	height: auto;
 }
