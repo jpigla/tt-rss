@@ -25,7 +25,7 @@ class Browser_Extension extends Plugin {
 	 */
 	function is_public_method($method): bool {
 		return in_array($method, [
-			"save_article", "check",
+			"save_article", "check", "quick_save",
 			"get_status", "get_annotations_for_url",
 			"save_annotation_for_url", "update_annotation_ext",
 			"delete_annotation_ext", "get_labels",
@@ -39,7 +39,7 @@ class Browser_Extension extends Plugin {
 	 */
 	function csrf_ignore($method): bool {
 		return in_array($method, [
-			"save_article", "check",
+			"save_article", "check", "quick_save",
 			"get_status", "get_annotations_for_url",
 			"save_annotation_for_url", "update_annotation_ext",
 			"delete_annotation_ext", "get_labels",
@@ -267,6 +267,79 @@ class Browser_Extension extends Plugin {
 		} catch (Exception $e) {
 			Debug::log("browser_extension: Fehler beim Speichern: " . $e->getMessage(), Debug::LOG_VERBOSE);
 			print json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern des Artikels.']);
+		}
+	}
+
+	// ─── Quick Save (iOS Shortcut) ──────────────────────────────
+
+	/**
+	 * Schnelles Speichern für iOS Shortcuts / Share Sheet.
+	 * Speichert Artikel und setzt automatisch "Später lesen".
+	 */
+	function quick_save(): void {
+		$this->send_api_headers();
+		if ($this->handle_preflight()) return;
+
+		$input = $this->read_input();
+		$owner_uid = $this->authenticate($input);
+		if (!$owner_uid) return;
+
+		$url = strip_tags($input['url'] ?? '');
+		$title = strip_tags($input['title'] ?? '');
+		$labels_input = $input['labels'] ?? '';
+
+		if (empty($url)) {
+			print json_encode(['status' => 'error', 'message' => 'URL ist erforderlich.']);
+			return;
+		}
+
+		if (empty($title)) {
+			$title = $url;
+		}
+
+		try {
+			// Prüfen ob Artikel bereits existiert
+			$ref_id = $this->find_article_by_url($url, $owner_uid);
+
+			if (!$ref_id) {
+				// Neuen Artikel erstellen (Content wird serverseitig geholt)
+				Article::_create_published_article($title, $url, '', '', $owner_uid);
+				$ref_id = $this->find_article_by_url($url, $owner_uid);
+			}
+
+			if (!$ref_id) {
+				print json_encode(['status' => 'error', 'message' => 'Artikel konnte nicht gespeichert werden.']);
+				return;
+			}
+
+			// "Später lesen" Label setzen
+			$label_id = Labels::find_id(self::READ_LATER_LABEL, $owner_uid);
+			if (!$label_id) {
+				Labels::create(self::READ_LATER_LABEL, '#ffffff', '#2196f3', $owner_uid);
+			}
+			Labels::add_article($ref_id, self::READ_LATER_LABEL, $owner_uid);
+
+			// Zusätzliche Labels setzen (kommagetrennt)
+			if (!empty($labels_input)) {
+				$label_names = array_map('trim', explode(',', $labels_input));
+				foreach ($label_names as $label_name) {
+					if (empty($label_name)) continue;
+					$lid = Labels::find_id($label_name, $owner_uid);
+					if ($lid) {
+						Labels::add_article($ref_id, $label_name, $owner_uid);
+					}
+				}
+			}
+
+			print json_encode([
+				'status' => 'ok',
+				'ref_id' => $ref_id,
+				'title' => $title,
+				'read_later' => true
+			]);
+		} catch (Exception $e) {
+			Debug::log("browser_extension: Quick-Save Fehler: " . $e->getMessage(), Debug::LOG_VERBOSE);
+			print json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern.']);
 		}
 	}
 
@@ -810,6 +883,21 @@ class Browser_Extension extends Plugin {
 			</label>
 			<hr/>
 			<?php endif; ?>
+
+			<h3><?= __('iOS Shortcut (Share-Menü)') ?></h3>
+			<div style="padding: 8px; background: var(--bg-color-secondary, #f5f5f5); border-radius: 4px;">
+				<p><?= __('Speichere Inhalte aus jeder App auf deinem iPhone über das Share-Menü:') ?></p>
+				<ol style="margin: 8px 0; padding-left: 20px; font-size: 13px;">
+					<li><?= __('Öffne die <b>Kurzbefehle</b>-App → Neuer Kurzbefehl') ?></li>
+					<li><?= __('Aktiviere <b>„Im Share-Sheet anzeigen"</b> (ℹ️-Icon)') ?></li>
+					<li><?= __('Füge <b>„URL abrufen"</b> als Aktion hinzu (POST-Request)') ?></li>
+					<li><?= __('URL:') ?> <code style="font-size: 11px; word-break: break-all;"><?= htmlspecialchars($base_url) ?>/public.php?op=pluginhandler&amp;plugin=browser_extension&amp;pmethod=quick_save</code></li>
+					<li><?= __('JSON-Body:') ?> <code>{"url": "[Geteilte URL]", "title": "[Name]", "api_key": "<?= htmlspecialchars(substr($api_key, 0, 8)) ?>…"}</code></li>
+				</ol>
+				<p style="font-size: 12px; color: var(--default-fg, #888);"><?= __('Der Shortcut speichert die URL automatisch mit dem Label „📌 Später lesen". Vollständige Anleitung: plugins.local/mobile_pwa/ios-shortcut-anleitung.md') ?></p>
+			</div>
+
+			<hr/>
 
 			<h3><?= __('Anleitung für Browser-Erweiterungen') ?></h3>
 			<div style="padding: 8px; background: var(--bg-color-secondary, #f5f5f5); border-radius: 4px;">

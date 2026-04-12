@@ -1,0 +1,32 @@
+{
+  "name": "TT-SS Reader",
+  "short_name": "TT-SS",
+  "description": "RSS-Reader mit Annotationen, Highlights und Leseliste",
+  "start_url": "/tt-rss/",
+  "scope": "/tt-rss/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#303030",
+  "background_color": "#303030",
+  "icons": [
+    {
+      "src": "images/favicon-72px.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "images/favicon-192px.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/favicon-512px.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["news", "productivity"],
+  "lang": "de"
+}

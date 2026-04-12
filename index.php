@@ -14,7 +14,21 @@
 <html>
 <head>
 	<title>Tiny Tiny RSS</title>
-    <meta name="viewport" content="initial-scale=1,width=device-width" />
+    <meta name="viewport" content="initial-scale=1,width=device-width,viewport-fit=cover" />
+
+	<!-- PWA -->
+	<link rel="manifest" href="manifest.webmanifest">
+	<meta name="theme-color" content="#303030" media="(prefers-color-scheme: dark)">
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+	<meta name="mobile-web-app-capable" content="yes">
+
+	<!-- iOS PWA -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-title" content="TT-SS">
+	<link rel="apple-touch-icon" href="images/favicon-180px.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="images/favicon-180px.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="images/favicon-180px.png">
 
 	<?php if ($_SESSION["uid"] && empty($_SESSION["safe_mode"])) {
 		$theme = Prefs::get(Prefs::USER_CSS_THEME, $_SESSION['uid'], $_SESSION['profile'] ?? null);
@@ -304,5 +318,10 @@
     </div>
 </div>
 
+<script>
+if ('serviceWorker' in navigator) {
+	navigator.serviceWorker.register('sw.js').catch(function() {});
+}
+</script>
 </body>
 </html>

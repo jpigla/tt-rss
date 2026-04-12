@@ -1,0 +1,233 @@
+/* ── TT-SS Mobile PWA Optimierung ──────────────────── */
+
+/* Safe Area für iOS Notch/Dynamic Island */
+@supports (padding: env(safe-area-inset-top)) {
+	body.ttrss_main {
+		padding-top: env(safe-area-inset-top);
+		padding-bottom: env(safe-area-inset-bottom);
+		padding-left: env(safe-area-inset-left);
+		padding-right: env(safe-area-inset-right);
+	}
+}
+
+/* ── Mobile Layout (< 768px) ─────────────────────────── */
+@media (max-width: 768px) {
+
+	/* Feeds-Sidebar: Overlay statt Seitenleiste */
+	#feeds-holder {
+		position: fixed !important;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 85% !important;
+		max-width: 320px;
+		z-index: 1000;
+		transform: translateX(-100%);
+		transition: transform 0.25s ease;
+		box-shadow: none;
+	}
+
+	#feeds-holder.mobile-visible {
+		transform: translateX(0);
+		box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+	}
+
+	/* Overlay-Hintergrund wenn Sidebar offen */
+	.mobile-sidebar-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		z-index: 999;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.25s ease;
+	}
+
+	.mobile-sidebar-overlay.visible {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	/* Content-Bereich voll */
+	#content-wrap {
+		width: 100% !important;
+		left: 0 !important;
+	}
+
+	/* Dojo Splitter ausblenden */
+	.dijitSplitter {
+		display: none !important;
+	}
+
+	/* Toolbar kompakter */
+	#toolbar {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		gap: 4px;
+		padding: 4px 8px;
+	}
+
+	#toolbar-main {
+		gap: 4px;
+	}
+
+	/* Hamburger-Button für Sidebar */
+	.mobile-menu-btn {
+		display: flex !important;
+		order: -1;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border: none;
+		background: none;
+		color: var(--default-fg, #e0e0e0);
+		cursor: pointer;
+		font-size: 24px;
+		padding: 0;
+		flex-shrink: 0;
+	}
+
+	/* Selects kleiner */
+	#toolbar .dijitSelect {
+		font-size: 12px;
+	}
+
+	/* Artikel: Bessere Touch-Targets */
+	.cdm .header,
+	.hl {
+		padding: 12px 16px;
+		min-height: 44px;
+	}
+
+	/* Artikel-Buttons größer für Touch */
+	.cdm .footer .left i.material-icons,
+	.hl .left i.material-icons {
+		font-size: 22px;
+		padding: 8px;
+		min-width: 40px;
+		min-height: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	/* Content-Insert: Volle Breite auf Mobil */
+	#content-insert {
+		height: 100% !important;
+	}
+
+	/* Bilder/Videos responsive */
+	.cdm .content-inner img,
+	.cdm .content-inner video,
+	#content-insert img,
+	#content-insert video {
+		max-width: 100% !important;
+		height: auto !important;
+	}
+
+	/* Pull-to-Refresh Indikator */
+	.mobile-refresh-indicator {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 3px;
+		background: var(--color-accent, #4fc3f7);
+		z-index: 9999;
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.3s ease;
+	}
+
+	.mobile-refresh-indicator.active {
+		transform: scaleX(1);
+	}
+}
+
+/* ── Kleine Screens (< 576px) ────────────────────────── */
+@media (max-width: 576px) {
+
+	/* Noch kompakterer Toolbar */
+	#toolbar {
+		padding: 2px 6px;
+	}
+
+	/* View-Mode Select verkleinern */
+	#toolbar-main select[name="view_mode"],
+	#toolbar-main select[name="order_by"] {
+		max-width: 100px;
+	}
+
+	/* Headlines enger */
+	.cdm .header,
+	.hl {
+		padding: 10px 12px;
+	}
+
+	/* Kein Widescreen auf Handy */
+	body.ttrss_main.wide-article #headlines-frame {
+		display: none !important;
+	}
+}
+
+/* ── Touch-Optimierung ───────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+
+	/* Größere Touch-Targets */
+	.cdm .footer .left i.material-icons,
+	#feedTree .dijitTreeRow,
+	.dijitMenuItem {
+		min-height: 44px;
+		display: flex;
+		align-items: center;
+	}
+
+	/* Scrollbar-Styling für Touch */
+	::-webkit-scrollbar {
+		width: 4px;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 2px;
+	}
+
+	/* Kein Text-Selektion beim Swipen */
+	.cdm .header,
+	.hl,
+	#feedTree {
+		-webkit-user-select: none;
+		user-select: none;
+	}
+
+	/* Artikel-Content soll selektierbar bleiben */
+	.cdm .content-inner,
+	#content-insert .content-inner {
+		-webkit-user-select: text;
+		user-select: text;
+	}
+}
+
+/* ── Standalone PWA Modus ────────────────────────────── */
+@media (display-mode: standalone) {
+
+	/* Extra-Padding oben für Status-Bar */
+	body.ttrss_main {
+		padding-top: env(safe-area-inset-top, 0px);
+	}
+
+	/* Toolbar-Hintergrund bis zur Kante */
+	#toolbar-frame {
+		background: var(--default-bg, #1a1a1a);
+	}
+}
+
+/* ── Hamburger-Button Default: versteckt auf Desktop ─── */
+.mobile-menu-btn {
+	display: none;
+}
