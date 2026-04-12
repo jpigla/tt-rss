@@ -230,7 +230,7 @@ class Newsletter_Feeds extends Plugin {
 
 	// ─── Hook: Feed-Fetch abfangen für newsletter:// URLs ──────────────
 
-	function hook_fetch_feed($feed_data, $fetch_url, $owner_uid, $feed_id) {
+	function hook_fetch_feed($feed_data, $fetch_url, $owner_uid, $feed, $last_article_timestamp = 0, $auth_login = '', $auth_pass = '') {
 		if (Newsletter_SenderManager::isNewsletterFeed($fetch_url)) {
 			return ''; // Leeres Ergebnis, RSS-Updater soll nichts tun
 		}
