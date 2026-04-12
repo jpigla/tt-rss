@@ -16,8 +16,13 @@ Dieses Dokument beschreibt die selbst entwickelten Plugins, die Tiny Tiny RSS um
 8. [Plugin 7: enhanced_tags](#7-enhanced_tags--erweitertes-tagging)
 9. [Plugin 8: ai_core](#8-ai_core--llm-abstraktionsschicht)
 10. [Plugin 9: ai_summary](#9-ai_summary--ki-zusammenfassungen)
-11. [Installation und Aktivierung](#installation-und-aktivierung)
-12. [Roadmap: Weitere Phasen](#roadmap-weitere-phasen)
+11. [Plugin 10: save_to_pkm](#10-save_to_pkm--pkm-export)
+12. [Plugin 11: reading_stats](#11-reading_stats--lese-statistiken)
+13. [Plugin 12: feed_health](#12-feed_health--feed-gesundheit)
+14. [Plugin 13: digest_view](#13-digest_view--dailyweekly-digest)
+15. [Plugin 14: feed_discovery](#14-feed_discovery--trending--discovery)
+16. [Installation und Aktivierung](#installation-und-aktivierung)
+17. [Roadmap: Weitere Phasen](#roadmap-weitere-phasen)
 
 ---
 
@@ -670,3 +675,133 @@ Der vollständige Implementierungsplan umfasst 5 Phasen mit 44 Features. Die hie
 --border-color    /* Standard-Rahmenfarbe */
 --color-accent    /* Akzentfarbe */
 ```
+
+---
+
+## Phase 6: Wissensarbeit, Analytics & Discovery
+
+### 10. save_to_pkm — PKM-Export
+
+**Zweck:** Artikel und Highlights an Readwise, Notion und Obsidian exportieren.
+
+**Dateien:**
+- `plugins.local/save_to_pkm/init.php`
+- `plugins.local/save_to_pkm/save_to_pkm.js`
+- `plugins.local/save_to_pkm/save_to_pkm.css`
+
+**Hooks:** `HOOK_ARTICLE_BUTTON`, `HOOK_PREFS_TAB`
+
+**Dienste:**
+| Dienst | API | Besonderheiten |
+|--------|-----|----------------|
+| Readwise | `POST readwise.io/api/v3/save/` | Highlight-Sync über `/api/v2/highlights/` |
+| Notion | `POST api.notion.com/v1/pages` | DB mit „Name" (Titel) + „URL" Properties nötig |
+| Obsidian | URI oder Datei | URI-Modus: `obsidian://new?...` / Datei-Modus: direkt ins Vault |
+
+**Konfiguration:** Einstellungen → PKM-Export → Pro Dienst Token/ID eingeben, aktivieren.
+
+**Integration:** Liest automatisch Highlights aus `ttrss_plugin_annotations` (falls Annotations-Plugin aktiv).
+
+---
+
+### 11. reading_stats — Lese-Statistiken
+
+**Zweck:** Lesegewohnheiten tracken — Artikel/Tag, Lesezeit, Streaks, Heatmap.
+
+**Dateien:**
+- `plugins.local/reading_stats/init.php`
+- `plugins.local/reading_stats/sql/pgsql/schema.sql`
+- `plugins.local/reading_stats/reading_stats.js`
+- `plugins.local/reading_stats/reading_stats.css`
+
+**DB-Tabellen:**
+- `ttrss_plugin_reading_stats` — Lese-Events (ref_id, feed_id, read_at, reading_time_sec)
+- `ttrss_plugin_reading_streaks` — Streak-Tracking (current, longest, last_read_date)
+
+**Hooks:** `HOOK_RENDER_ARTICLE_CDM`, `HOOK_RENDER_ARTICLE`, `HOOK_MAIN_TOOLBAR_BUTTON`, `HOOK_PREFS_TAB`, `HOOK_HOUSE_KEEPING`
+
+**Dashboard-Features:**
+- Übersichtskarten (Heute/Woche/Monat/Gesamt)
+- Streak-Anzeige (aktuell + Rekord)
+- Tages-Balkendiagramm (30 Tage)
+- Contribution-Heatmap (52 Wochen, GitHub-Style)
+- Tageszeit-Verteilung
+- Top-10-Feeds
+
+**Tracking:** IntersectionObserver erfasst Artikel bei >50% Sichtbarkeit. Lesezeit wird alle 30s gesendet (max 10 min/Artikel).
+
+---
+
+### 12. feed_health — Feed-Gesundheit
+
+**Zweck:** Feed-Fehler, Staleness und Qualität überwachen.
+
+**Dateien:**
+- `plugins.local/feed_health/init.php`
+- `plugins.local/feed_health/sql/pgsql/schema.sql`
+- `plugins.local/feed_health/feed_health.js`
+- `plugins.local/feed_health/feed_health.css`
+
+**DB-Tabelle:** `ttrss_plugin_feed_health` — Fetch-Protokoll (status, error_message, response_time_ms)
+
+**Hooks:** `HOOK_FEED_FETCHED`, `HOOK_HOUSE_KEEPING`, `HOOK_MAIN_TOOLBAR_BUTTON`, `HOOK_PREFS_TAB`, `HOOK_PREFS_EDIT_FEED`
+
+**Features:**
+- Ampel-Dashboard: Gesund / Inaktiv / Fehler
+- Problem-Feed-Liste mit Fehlerdetails
+- Health-Score (0-100%) pro Feed im Feed-Editor
+- Feed-Verlaufsansicht
+- Konfigurierbarer Staleness-Schwellwert (Default: 14 Tage)
+
+---
+
+### 13. digest_view — Daily/Weekly Digest
+
+**Zweck:** Konfigurierbare Digest-Zusammenfassungen aus Feeds/Kategorien.
+
+**Dateien:**
+- `plugins.local/digest_view/init.php`
+- `plugins.local/digest_view/sql/pgsql/schema.sql`
+- `plugins.local/digest_view/digest_view.js`
+- `plugins.local/digest_view/digest_view.css`
+
+**DB-Tabellen:**
+- `ttrss_plugin_digest_configs` — Konfigurationen (Häufigkeit, Zeitplan, Filter)
+- `ttrss_plugin_digest_issues` — Generierte Digest-Ausgaben
+
+**Hooks:** `HOOK_HOUSE_KEEPING`, `HOOK_MAIN_TOOLBAR_BUTTON`, `HOOK_PREFS_TAB`
+
+**Features:**
+- Mehrere Digest-Konfigurationen pro Nutzer
+- Täglich oder Wöchentlich, Uhrzeit + Wochentag wählbar
+- Feed-/Kategorie-/Score-Filter
+- In-App Digest-Viewer (gruppiert nach Kategorie)
+- Archiv vergangener Ausgaben
+- Manuelles Generieren über Button
+- Optionaler E-Mail-Versand
+
+---
+
+### 14. feed_discovery — Trending & Discovery
+
+**Zweck:** Trending Topics erkennen und neue Feed-Quellen entdecken.
+
+**Dateien:**
+- `plugins.local/feed_discovery/init.php`
+- `plugins.local/feed_discovery/sql/pgsql/schema.sql`
+- `plugins.local/feed_discovery/feed_discovery.js`
+- `plugins.local/feed_discovery/feed_discovery.css`
+
+**DB-Tabellen:**
+- `ttrss_plugin_trending_topics` — Berechnete Trending-Keywords
+- `ttrss_plugin_feed_suggestions` — Feed-Vorschläge
+
+**Hooks:** `HOOK_ARTICLE_FILTER`, `HOOK_HOUSE_KEEPING`, `HOOK_MAIN_TOOLBAR_BUTTON`, `HOOK_PREFS_TAB`
+
+**Features:**
+- **Trending Topics**: Keyword-Analyse über PostgreSQL `tsvector_combined` / `ts_stat()`
+  - Vergleich aktuelle vs. vorherige Periode → Rising Topics
+  - Tag-Cloud + sortierte Liste mit Beispielartikeln
+- **Feed-Vorschläge**: Aus TT-RSS Feed-Browser (populäre Feeds anderer Nutzer)
+  - Ein-Klick Abonnieren / Ausblenden
+- Konfigurierbar: Trending-Zeitraum (Default: 7 Tage), Mindest-Artikelzahl (Default: 3)
