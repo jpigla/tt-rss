@@ -44,6 +44,8 @@
 		"j4mie/idiorm": "dev-master",
 		"soundasleep/html2text": "^2.1",
 		"guzzlehttp/guzzle": "^7.0",
-		"dragonmantank/cron-expression": "^3.4"
+		"dragonmantank/cron-expression": "^3.4",
+		"webklex/php-imap": "^5.0",
+		"zbateson/mail-mime-parser": "^3.0"
 	}
 }
