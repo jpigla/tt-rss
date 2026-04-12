@@ -229,6 +229,11 @@ class Feeds extends Handler_Protected {
 
 				$feed_id = $line["feed_id"];
 
+				// for archived articles, use orig_feed_id for icon lookup
+				$icon_feed_id = ((int)$feed_id === Feeds::FEED_ARCHIVED && !empty($line['orig_feed_id']))
+					? (int) $line['orig_feed_id']
+					: (int) $feed_id;
+
 				if ($line["num_labels"] > 0) {
 					$label_cache = $line["label_cache"];
 					$labels = false;
@@ -333,20 +338,21 @@ class Feeds extends Handler_Protected {
 
 				$line['tags'] = $line['tag_cache'] ? explode(',', $line['tag_cache']) : [];
 
-				$line['has_icon'] = self::_has_icon($feed_id);
+				$line['has_icon'] = self::_has_icon($icon_feed_id);
+				$line['icon_feed_id'] = $icon_feed_id;
 
 				// setting feed headline background color, needs to change text color based on dark/light
 				$fav_color = $line['favicon_avg_color'] ?? false;
 
-				if (!isset($rgba_cache[$feed_id])) {
+				if (!isset($rgba_cache[$icon_feed_id])) {
 					if ($fav_color && $fav_color != 'fail') {
-						$rgba_cache[$feed_id] = \Colors\_color_unpack($fav_color);
+						$rgba_cache[$icon_feed_id] = \Colors\_color_unpack($fav_color);
 					} else {
-						$rgba_cache[$feed_id] = \Colors\_color_unpack($this->_color_of($line['feed_title']));
+						$rgba_cache[$icon_feed_id] = \Colors\_color_unpack($this->_color_of($line['feed_title']));
 					}
 				}
 
-				$line['feed_bg_color'] = 'rgba(' . implode(',', $rgba_cache[$feed_id]) . ',0.3)';
+				$line['feed_bg_color'] = 'rgba(' . implode(',', $rgba_cache[$icon_feed_id]) . ',0.3)';
 
 				PluginHost::getInstance()->chain_hooks_callback(PluginHost::HOOK_RENDER_ARTICLE_CDM,
 					function ($result, $plugin) use (&$line) {
@@ -359,7 +365,7 @@ class Feeds extends Handler_Protected {
 				/* we don't need those */
 
 				foreach (["date_entered", "guid", "last_published", "last_marked", "tag_cache", "favicon_avg_color",
-								"uuid", "label_cache", "yyiw", "num_enclosures", "content_preview"] as $k)
+								"uuid", "label_cache", "yyiw", "num_enclosures", "content_preview", "orig_feed_id"] as $k)
 					unset($line[$k]);
 
 				$reply['content'][] = $line;
@@ -1484,6 +1490,7 @@ class Feeds extends Handler_Protected {
 		} else if ($feed == Feeds::FEED_ARCHIVED && !$cat_view) { // archive virtual feed
 			$query_strategy_part = "feed_id IS NULL";
 			$allow_archived = true;
+			$vfeed_query_part = "(SELECT title FROM ttrss_archived_feeds WHERE id = ttrss_user_entries.orig_feed_id) AS feed_title,";
 		} else if ($feed == Feeds::CATEGORY_UNCATEGORIZED && $cat_view) { // uncategorized
 			$query_strategy_part = "cat_id IS NULL AND feed_id IS NOT NULL";
 			$vfeed_query_part = "ttrss_feeds.title AS feed_title,";
@@ -1706,6 +1713,7 @@ class Feeds extends Handler_Protected {
 						lang,
 						hide_images,
 						unread,feed_id,marked,published,link,last_read,
+						orig_feed_id,
 						last_marked, last_published,
 						$vfeed_query_part
 						$content_query_part

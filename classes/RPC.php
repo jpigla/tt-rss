@@ -88,6 +88,82 @@ class RPC extends Handler_Protected {
 		print json_encode(["message" => "UPDATE_COUNTERS"]);
 	}
 
+	function archiveSelection(): void {
+		$ids = self::_param_to_int_array($_REQUEST['ids'] ?? '');
+
+		if (!$ids)
+			return;
+
+		$ids_qmarks = arr_qmarks($ids);
+
+		// collect distinct feed_ids for articles to archive
+		$sth = $this->pdo->prepare("SELECT DISTINCT feed_id FROM ttrss_user_entries
+			WHERE ref_id IN ($ids_qmarks) AND owner_uid = ? AND feed_id IS NOT NULL");
+		$sth->execute([...$ids, $_SESSION['uid']]);
+
+		while ($row = $sth->fetch()) {
+			$feed_id = (int) $row['feed_id'];
+
+			// ensure feed exists in ttrss_archived_feeds (required by FK on orig_feed_id)
+			$check = $this->pdo->prepare("SELECT id FROM ttrss_archived_feeds WHERE id = ?");
+			$check->execute([$feed_id]);
+
+			if (!$check->fetch()) {
+				$fsth = $this->pdo->prepare("SELECT title, feed_url, site_url FROM ttrss_feeds WHERE id = ?");
+				$fsth->execute([$feed_id]);
+
+				if ($frow = $fsth->fetch()) {
+					$isth = $this->pdo->prepare("INSERT INTO ttrss_archived_feeds
+						(id, owner_uid, created, title, feed_url, site_url)
+						VALUES (?, ?, NOW(), ?, ?, ?)");
+					$isth->execute([$feed_id, $_SESSION['uid'], $frow['title'], $frow['feed_url'], $frow['site_url']]);
+				}
+			}
+		}
+
+		// now archive: set feed_id = NULL and preserve origin
+		$sth = $this->pdo->prepare("UPDATE ttrss_user_entries SET
+			orig_feed_id = COALESCE(orig_feed_id, feed_id),
+			feed_id = NULL
+			WHERE ref_id IN ($ids_qmarks) AND owner_uid = ? AND feed_id IS NOT NULL");
+
+		$sth->execute([...$ids, $_SESSION['uid']]);
+
+		print json_encode(["message" => "UPDATE_COUNTERS"]);
+	}
+
+	function unarchiveSelection(): void {
+		$ids = self::_param_to_int_array($_REQUEST['ids'] ?? '');
+
+		if (!$ids)
+			return;
+
+		$ids_qmarks = arr_qmarks($ids);
+
+		// restore feed_id from orig_feed_id, but only if the original feed still exists
+		$sth = $this->pdo->prepare("UPDATE ttrss_user_entries SET
+			feed_id = ttrss_user_entries.orig_feed_id,
+			orig_feed_id = NULL
+			FROM ttrss_feeds
+			WHERE ttrss_user_entries.ref_id IN ($ids_qmarks)
+			AND ttrss_user_entries.owner_uid = ?
+			AND ttrss_user_entries.feed_id IS NULL
+			AND ttrss_user_entries.orig_feed_id = ttrss_feeds.id
+			AND ttrss_feeds.owner_uid = ttrss_user_entries.owner_uid");
+
+		$sth->execute([...$ids, $_SESSION['uid']]);
+
+		// for articles whose original feed no longer exists, just clear orig_feed_id
+		$sth2 = $this->pdo->prepare("UPDATE ttrss_user_entries SET
+			orig_feed_id = NULL
+			WHERE ref_id IN ($ids_qmarks) AND owner_uid = ? AND feed_id IS NULL AND orig_feed_id IS NOT NULL
+			AND orig_feed_id NOT IN (SELECT id FROM ttrss_feeds WHERE owner_uid = ?)");
+
+		$sth2->execute([...$ids, $_SESSION['uid'], $_SESSION['uid']]);
+
+		print json_encode(["message" => "UPDATE_COUNTERS"]);
+	}
+
 	function publ(): void {
 		$pub = clean($_REQUEST["pub"]);
 		$id = clean($_REQUEST["id"]);
