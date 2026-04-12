@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>TT-SS Reader</title>
+	<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+	<div class="popup-container">
+		<div class="popup-header">
+			<h1>TT-SS Reader</h1>
+		</div>
+
+		<div id="not-configured" class="popup-message" style="display:none">
+			<p>Bitte konfiguriere zuerst die Server-URL und den API-Schlüssel.</p>
+			<button id="open-options" class="btn btn-primary">Einstellungen öffnen</button>
+		</div>
+
+		<div id="loading" class="popup-message">
+			<p>Lade Status\u2026</p>
+		</div>
+
+		<div id="content" style="display:none">
+			<!-- Status -->
+			<div id="status-section" class="popup-section">
+				<div id="status-saved" class="status-badge saved" style="display:none">
+					<span class="status-icon">\u2713</span> Gespeichert
+				</div>
+				<div id="status-unsaved" class="status-badge unsaved" style="display:none">
+					Nicht gespeichert
+				</div>
+			</div>
+
+			<!-- Seite speichern -->
+			<div id="save-section" class="popup-section">
+				<button id="save-btn" class="btn btn-primary btn-full">
+					Seite speichern
+				</button>
+			</div>
+
+			<!-- Labels -->
+			<div id="labels-section" class="popup-section" style="display:none">
+				<h2>Labels</h2>
+				<div id="labels-list" class="labels-list"></div>
+			</div>
+
+			<!-- Später lesen -->
+			<div id="read-later-section" class="popup-section" style="display:none">
+				<button id="read-later-btn" class="btn btn-full">
+					\uD83D\uDCCC Später lesen
+				</button>
+			</div>
+
+			<!-- Info -->
+			<div id="info-section" class="popup-section" style="display:none">
+				<div class="info-row">
+					<span class="info-label">Annotationen:</span>
+					<span id="annotation-count" class="info-value">0</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="popup.js"></script>
+</body>
+</html>

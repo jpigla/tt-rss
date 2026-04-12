@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>TT-SS Reader — Einstellungen</title>
+	<link rel="stylesheet" href="options.css">
+</head>
+<body>
+	<div class="options-container">
+		<h1>TT-SS Reader Einstellungen</h1>
+
+		<div class="form-group">
+			<label for="server-url">Server-URL</label>
+			<input type="url" id="server-url" placeholder="https://rss.example.com/tt-rss">
+			<p class="hint">Die Basis-URL deiner TT-RSS-Instanz (ohne trailing Slash).</p>
+		</div>
+
+		<div class="form-group">
+			<label for="api-key">API-Schlüssel</label>
+			<input type="text" id="api-key" placeholder="API-Schlüssel aus den TT-RSS-Einstellungen">
+			<p class="hint">Findest du unter Einstellungen &rarr; Browser-Erweiterung in TT-RSS.</p>
+		</div>
+
+		<div class="btn-row">
+			<button id="save-btn" class="btn btn-primary">Speichern</button>
+			<button id="test-btn" class="btn">Verbindung testen</button>
+		</div>
+
+		<div id="status" class="status" style="display:none"></div>
+	</div>
+	<script src="options.js"></script>
+</body>
+</html>

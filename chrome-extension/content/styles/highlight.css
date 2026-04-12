@@ -1,0 +1,15 @@
+/* ── TT-SS Highlights im Page-DOM ──────────────────── */
+.ttss-highlight {
+	border-radius: 2px;
+	padding: 0 1px;
+	cursor: pointer;
+	transition: opacity 0.15s;
+}
+
+.ttss-highlight:hover {
+	opacity: 0.8;
+}
+
+.ttss-highlight.ttss-has-note {
+	border-bottom: 2px dotted rgba(0, 0, 0, 0.35);
+}

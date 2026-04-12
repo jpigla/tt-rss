@@ -1,0 +1,167 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	width: 320px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	font-size: 13px;
+	background: #1a1a1a;
+	color: #e0e0e0;
+}
+
+.popup-container {
+	padding: 16px;
+}
+
+.popup-header {
+	margin-bottom: 12px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #333;
+}
+
+.popup-header h1 {
+	font-size: 15px;
+	font-weight: 600;
+	color: #4fc3f7;
+}
+
+.popup-message {
+	text-align: center;
+	padding: 16px 0;
+	color: #999;
+}
+
+.popup-section {
+	margin-bottom: 12px;
+}
+
+.popup-section h2 {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #888;
+	margin-bottom: 8px;
+}
+
+/* Status */
+.status-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.status-badge.saved {
+	background: rgba(79, 195, 247, 0.15);
+	color: #4fc3f7;
+}
+
+.status-badge.unsaved {
+	background: rgba(255, 255, 255, 0.08);
+	color: #999;
+}
+
+/* Buttons */
+.btn {
+	padding: 8px 16px;
+	border-radius: 6px;
+	border: 1px solid #444;
+	cursor: pointer;
+	font-size: 13px;
+	font-family: inherit;
+	color: #e0e0e0;
+	background: #2a2a2a;
+	transition: background 0.15s;
+}
+
+.btn:hover {
+	background: #333;
+}
+
+.btn-primary {
+	background: #4fc3f7;
+	color: #111;
+	border-color: #4fc3f7;
+}
+
+.btn-primary:hover {
+	background: #29b6f6;
+}
+
+.btn-full {
+	display: block;
+	width: 100%;
+}
+
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn.active {
+	background: #4fc3f7;
+	color: #111;
+	border-color: #4fc3f7;
+}
+
+/* Labels */
+.labels-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.label-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 8px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+
+.label-item:hover {
+	background: rgba(255, 255, 255, 0.06);
+}
+
+.label-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.label-checkbox {
+	width: 14px;
+	height: 14px;
+	accent-color: #4fc3f7;
+}
+
+.label-name {
+	flex: 1;
+	font-size: 12px;
+}
+
+/* Info */
+.info-row {
+	display: flex;
+	justify-content: space-between;
+	padding: 4px 0;
+	font-size: 12px;
+}
+
+.info-label {
+	color: #888;
+}
+
+.info-value {
+	color: #e0e0e0;
+	font-weight: 500;
+}

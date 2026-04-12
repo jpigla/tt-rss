@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "TT-SS Reader",
+  "description": "Webseiten speichern, highlighten und annotieren — direkt mit deinem TT-SS RSS-Reader synchronisiert.",
+  "version": "1.0.0",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": [
+        "content/api-client.js",
+        "content/highlighter.js",
+        "content/highlight-popup.js",
+        "content/status-bar.js",
+        "content/content-script.js"
+      ],
+      "css": ["content/styles/highlight.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "TT-SS Reader"
+  },
+  "options_page": "options/options.html"
+}
