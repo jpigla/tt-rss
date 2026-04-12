@@ -1,0 +1,183 @@
+.fd-toolbar-btn {
+	cursor: pointer;
+}
+
+.fd-panel {
+	padding: 0;
+}
+
+.fd-tabs {
+	display: flex;
+	border-bottom: 2px solid var(--border-color, #ddd);
+	margin-bottom: 16px;
+}
+
+.fd-tab {
+	padding: 8px 20px;
+	border: none;
+	background: none;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--dim-text, #888);
+	border-bottom: 2px solid transparent;
+	margin-bottom: -2px;
+	transition: color 0.2s, border-color 0.2s;
+}
+
+.fd-tab:hover {
+	color: var(--default-text, #333);
+}
+
+.fd-tab-active {
+	color: var(--accent-color, #5c7aff);
+	border-bottom-color: var(--accent-color, #5c7aff);
+}
+
+.fd-content {
+	padding: 0 8px 8px;
+	min-height: 200px;
+}
+
+.fd-loading {
+	text-align: center;
+	color: var(--dim-text, #888);
+	padding: 40px 0;
+}
+
+.fd-empty {
+	text-align: center;
+	color: var(--dim-text, #888);
+	padding: 40px 0;
+}
+
+.fd-empty .material-icons {
+	font-size: 48px;
+	margin-bottom: 8px;
+	opacity: 0.3;
+}
+
+/* Tag Cloud */
+.fd-tag-cloud {
+	text-align: center;
+	padding: 16px;
+	margin-bottom: 16px;
+	border: 1px solid var(--border-color, #eee);
+	border-radius: 8px;
+	background: var(--default-bg, #fafafa);
+	line-height: 2;
+}
+
+.fd-tag {
+	display: inline-block;
+	padding: 2px 6px;
+	color: var(--accent-color, #5c7aff);
+	cursor: default;
+}
+
+/* Topic Liste */
+.fd-topic-list {
+	margin-top: 12px;
+}
+
+.fd-topic-item {
+	padding: 8px 0;
+	border-bottom: 1px solid var(--border-color, #eee);
+}
+
+.fd-topic-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.fd-topic-name {
+	font-weight: 600;
+	font-size: 14px;
+	text-transform: capitalize;
+}
+
+.fd-topic-count {
+	font-size: 12px;
+	color: var(--dim-text, #888);
+}
+
+.fd-topic-samples {
+	margin-top: 4px;
+}
+
+.fd-sample {
+	font-size: 12px;
+	color: var(--dim-text, #666);
+	padding: 1px 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.fd-sample::before {
+	content: "→ ";
+	color: var(--dim-text, #aaa);
+}
+
+/* Feed-Vorschläge */
+.fd-suggestions {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.fd-suggestion {
+	padding: 12px;
+	border: 1px solid var(--border-color, #ddd);
+	border-radius: 6px;
+	transition: opacity 0.3s;
+}
+
+.fd-sug-header strong {
+	font-size: 14px;
+}
+
+.fd-sug-url {
+	font-size: 11px;
+	color: var(--dim-text, #888);
+	margin: 2px 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.fd-sug-reason {
+	font-size: 12px;
+	color: var(--dim-text, #666);
+	margin-bottom: 8px;
+}
+
+.fd-sug-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.fd-btn {
+	padding: 4px 12px;
+	border-radius: 4px;
+	border: 1px solid var(--border-color, #ccc);
+	background: var(--default-bg, #fff);
+	cursor: pointer;
+	font-size: 12px;
+	transition: background 0.2s;
+}
+
+.fd-btn-subscribe {
+	background: var(--accent-color, #5c7aff);
+	color: #fff;
+	border-color: var(--accent-color, #5c7aff);
+}
+
+.fd-btn-subscribe:hover {
+	opacity: 0.9;
+}
+
+.fd-btn-dismiss:hover {
+	background: var(--default-highlight-bg, #f0f0f0);
+}
