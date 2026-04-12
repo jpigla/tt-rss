@@ -32,6 +32,11 @@
 			return;
 		}
 
+		if (!serverUrl.startsWith('https://') && !serverUrl.startsWith('http://localhost') && !serverUrl.startsWith('http://127.0.0.1')) {
+			showStatus('Warnung: HTTPS wird dringend empfohlen, da der API-Schl\u00FCssel \u00FCbertragen wird.', 'error');
+			return;
+		}
+
 		if (!apiKey) {
 			showStatus('Bitte API-Schlüssel eingeben.', 'error');
 			return;

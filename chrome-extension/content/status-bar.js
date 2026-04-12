@@ -13,6 +13,7 @@ TTSS.statusBar = (function () {
 	var _state = null;
 	var _serverUrl = '';
 	var _collapsed = false;
+	var _outsideClickHandlers = [];
 	var BAR_HEIGHT = 38;
 
 	// SVG-Icons als Strings
@@ -134,6 +135,7 @@ TTSS.statusBar = (function () {
 	 * Status-Bar ausblenden.
 	 */
 	function hide() {
+		cleanupOutsideClickHandlers();
 		if (_host) {
 			_host.remove();
 			_host = null;
@@ -267,6 +269,13 @@ TTSS.statusBar = (function () {
 		_bar.appendChild(collapseBtn);
 	}
 
+	function cleanupOutsideClickHandlers() {
+		_outsideClickHandlers.forEach(function (h) {
+			document.removeEventListener('mousedown', h, true);
+		});
+		_outsideClickHandlers = [];
+	}
+
 	function renderLabels(container) {
 		while (container.firstChild) {
 			container.removeChild(container.firstChild);
@@ -312,7 +321,7 @@ TTSS.statusBar = (function () {
 
 	function toggleLabelPicker(container) {
 		var existing = _shadow.querySelector('.ttss-label-picker');
-		if (existing) { existing.remove(); return; }
+		if (existing) { existing.remove(); cleanupOutsideClickHandlers(); return; }
 
 		TTSS.api.getLabels().then(function (allLabels) {
 			var picker = document.createElement('div');
@@ -368,20 +377,23 @@ TTSS.statusBar = (function () {
 
 			// Click-Outside
 			setTimeout(function () {
-				document.addEventListener('mousedown', function handler(e) {
+				var handler = function (e) {
 					var path = e.composedPath();
 					if (!path.some(function (el) { return el === picker || el === _host; })) {
 						picker.remove();
 						document.removeEventListener('mousedown', handler, true);
+						_outsideClickHandlers = _outsideClickHandlers.filter(function (h) { return h !== handler; });
 					}
-				}, true);
+				};
+				_outsideClickHandlers.push(handler);
+				document.addEventListener('mousedown', handler, true);
 			}, 100);
 		});
 	}
 
 	function toggleNoteEditor() {
 		var existing = _shadow.querySelector('.ttss-note-editor');
-		if (existing) { existing.remove(); return; }
+		if (existing) { existing.remove(); cleanupOutsideClickHandlers(); return; }
 
 		var editor = document.createElement('div');
 		editor.className = 'ttss-note-editor';
@@ -419,13 +431,16 @@ TTSS.statusBar = (function () {
 
 		// Click-Outside
 		setTimeout(function () {
-			document.addEventListener('mousedown', function handler(e) {
+			var handler = function (e) {
 				var path = e.composedPath();
 				if (!path.some(function (el) { return el === editor || el === _host; })) {
 					editor.remove();
 					document.removeEventListener('mousedown', handler, true);
+					_outsideClickHandlers = _outsideClickHandlers.filter(function (h) { return h !== handler; });
 				}
-			}, true);
+			};
+			_outsideClickHandlers.push(handler);
+			document.addEventListener('mousedown', handler, true);
 		}, 100);
 	}
 

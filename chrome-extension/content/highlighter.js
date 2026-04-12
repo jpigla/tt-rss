@@ -27,7 +27,7 @@ TTSS.highlighter = (function () {
 		var textContent = ann.highlighted_text;
 		if (!textContent) return false;
 
-		if (document.querySelector('mark.ttss-highlight[data-ann-id="' + ann.id + '"]')) {
+		if (document.querySelector('mark.ttss-highlight[data-ann-id="' + CSS.escape(String(ann.id)) + '"]')) {
 			_appliedIds[ann.id] = true;
 			return true;
 		}
@@ -98,7 +98,7 @@ TTSS.highlighter = (function () {
 	 * Ein Highlight aus dem DOM entfernen.
 	 */
 	function removeHighlight(annId) {
-		document.querySelectorAll('mark.ttss-highlight[data-ann-id="' + annId + '"]').forEach(function (el) {
+		document.querySelectorAll('mark.ttss-highlight[data-ann-id="' + CSS.escape(String(annId)) + '"]').forEach(function (el) {
 			var parent = el.parentNode;
 			while (el.firstChild) {
 				parent.insertBefore(el.firstChild, el);

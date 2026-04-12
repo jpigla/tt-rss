@@ -9,6 +9,7 @@ TTSS.popup = (function () {
 
 	var _host = null;
 	var _shadow = null;
+	var _outsideClickHandler = null;
 
 	function ensureHost() {
 		if (_host) return;
@@ -123,6 +124,10 @@ TTSS.popup = (function () {
 	}
 
 	function removePopup() {
+		if (_outsideClickHandler) {
+			document.removeEventListener('mousedown', _outsideClickHandler, true);
+			_outsideClickHandler = null;
+		}
 		if (!_shadow) return;
 		_shadow.querySelectorAll('.ttss-popup').forEach(function (el) { el.remove(); });
 	}
@@ -243,8 +248,13 @@ TTSS.popup = (function () {
 	function createPopup(rect) {
 		var popup = document.createElement('div');
 		popup.className = 'ttss-popup';
-		popup.style.left = Math.min(rect.left, window.innerWidth - 380) + 'px';
-		popup.style.top = (rect.bottom + 8) + 'px';
+		popup.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 380)) + 'px';
+		// Popup über der Selektion anzeigen wenn unten kein Platz
+		var top = rect.bottom + 8;
+		if (top + 200 > window.innerHeight) {
+			top = Math.max(8, rect.top - 208);
+		}
+		popup.style.top = top + 'px';
 		return popup;
 	}
 
@@ -281,7 +291,7 @@ TTSS.popup = (function () {
 
 	function setupOutsideClickHandler(popup) {
 		setTimeout(function () {
-			document.addEventListener('mousedown', function handler(e) {
+			_outsideClickHandler = function (e) {
 				// Prüfen ob Klick innerhalb des Shadow DOM ist
 				var path = e.composedPath();
 				var insidePopup = path.some(function (el) {
@@ -289,9 +299,9 @@ TTSS.popup = (function () {
 				});
 				if (!insidePopup) {
 					removePopup();
-					document.removeEventListener('mousedown', handler, true);
 				}
-			}, true);
+			};
+			document.addEventListener('mousedown', _outsideClickHandler, true);
 		}, 200);
 	}
 

@@ -55,8 +55,18 @@ class Browser_Extension extends Plugin {
 	 */
 	private function send_api_headers(): void {
 		header('Content-Type: application/json');
-		header('Access-Control-Allow-Origin: *');
-		header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+
+		$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+		// Chrome-Extension und localhost für Entwicklung erlauben
+		if (preg_match('/^chrome-extension:\/\//', $origin)
+			|| preg_match('/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/', $origin)) {
+			header('Access-Control-Allow-Origin: ' . $origin);
+			header('Vary: Origin');
+		} else {
+			// Fallback für direkte Aufrufe (Bookmarklet etc.)
+			header('Access-Control-Allow-Origin: *');
+		}
+		header('Access-Control-Allow-Methods: POST, OPTIONS');
 		header('Access-Control-Allow-Headers: Content-Type');
 	}
 
@@ -76,8 +86,8 @@ class Browser_Extension extends Plugin {
 	 */
 	private function read_input(): array {
 		$input = json_decode(file_get_contents('php://input'), true);
-		if (!$input) {
-			$input = $_REQUEST;
+		if (!is_array($input)) {
+			$input = $_POST;
 		}
 		return $input;
 	}
@@ -131,8 +141,11 @@ class Browser_Extension extends Plugin {
 		$result .= $parts['path'] ?? '/';
 		if (!empty($parts['query'])) $result .= '?' . $parts['query'];
 
-		// Trailing Slash bei Root-Pfaden normalisieren
-		$result = rtrim($result, '/');
+		// Trailing Slash entfernen (außer bei Root-Pfad)
+		$path = $parts['path'] ?? '/';
+		if ($path !== '/') {
+			$result = rtrim($result, '/');
+		}
 
 		return $result;
 	}
@@ -207,6 +220,8 @@ class Browser_Extension extends Plugin {
 	 */
 	function check(): void {
 		$this->send_api_headers();
+		if ($this->handle_preflight()) return;
+
 		print json_encode([
 			'status' => 'ok',
 			'version' => '2.0'
@@ -381,11 +396,19 @@ class Browser_Extension extends Plugin {
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
-		$highlighted_text = $input['highlighted_text'] ?? '';
-		$note = $input['note'] ?? '';
+		$highlighted_text = strip_tags($input['highlighted_text'] ?? '');
+		$note = strip_tags($input['note'] ?? '');
 		$color_raw = $input['color'] ?? '#fff3cd';
 		$color = preg_match('/^#[0-9a-fA-F]{3,8}$/', $color_raw) ? $color_raw : '#fff3cd';
-		$selector_path = $input['selector_path'] ?? '';
+		$selector_path_raw = $input['selector_path'] ?? '';
+		// Nur gültiges JSON akzeptieren
+		$selector_path = '';
+		if (!empty($selector_path_raw)) {
+			$decoded = json_decode($selector_path_raw, true);
+			if (is_array($decoded)) {
+				$selector_path = json_encode($decoded);
+			}
+		}
 		$start_offset = (int)($input['start_offset'] ?? 0);
 		$end_offset = (int)($input['end_offset'] ?? 0);
 
@@ -429,7 +452,7 @@ class Browser_Extension extends Plugin {
 		if (!$owner_uid) return;
 
 		$id = (int)($input['id'] ?? 0);
-		$note = $input['note'] ?? '';
+		$note = strip_tags($input['note'] ?? '');
 		$color_raw = $input['color'] ?? '#fff3cd';
 		$color = preg_match('/^#[0-9a-fA-F]{3,8}$/', $color_raw) ? $color_raw : '#fff3cd';
 
@@ -635,7 +658,7 @@ class Browser_Extension extends Plugin {
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
-		$note = $input['note'] ?? '';
+		$note = strip_tags($input['note'] ?? '');
 
 		if (empty($url)) {
 			print json_encode(['status' => 'error', 'message' => 'URL ist erforderlich.']);
@@ -703,7 +726,7 @@ class Browser_Extension extends Plugin {
 
 			if ($storage_row) {
 				$storage = json_decode($storage_row['content'], true);
-				if (is_array($storage) && ($storage['api_key'] ?? '') === $api_key) {
+				if (is_array($storage) && hash_equals($storage['api_key'] ?? '', $api_key)) {
 					return $uid;
 				}
 			}

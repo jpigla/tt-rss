@@ -97,6 +97,8 @@ TTSS.controller = (function () {
 			_annotations = annotations;
 			TTSS.highlighter.applyHighlights(annotations);
 			TTSS.statusBar.updateHighlightCount(annotations.length);
+		}).catch(function () {
+			// Annotationen konnten nicht geladen werden — still ignorieren
 		});
 	}
 
@@ -142,6 +144,8 @@ TTSS.controller = (function () {
 						TTSS.highlighter.applyOne(ann);
 						TTSS.statusBar.updateHighlightCount(_annotations.length);
 					}
+				}).catch(function () {
+					// Annotation konnte nicht gespeichert werden — still ignorieren
 				});
 
 				window.getSelection().removeAllRanges();
