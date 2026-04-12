@@ -1,0 +1,130 @@
+.fh-dashboard-btn {
+	cursor: pointer;
+}
+
+.fh-dashboard {
+	padding: 8px;
+}
+
+.fh-summary {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.fh-stat {
+	flex: 1;
+	text-align: center;
+	padding: 14px;
+	border-radius: 8px;
+	border: 1px solid var(--border-color, #ddd);
+}
+
+.fh-stat-value {
+	font-size: 28px;
+	font-weight: 700;
+}
+
+.fh-stat-label {
+	font-size: 12px;
+	color: var(--dim-text, #888);
+	margin-top: 2px;
+}
+
+.fh-healthy .fh-stat-value { color: #40c463; }
+.fh-stale .fh-stat-value { color: #f0ad4e; }
+.fh-error .fh-stat-value { color: #d9534f; }
+
+/* Fortschrittsbalken */
+.fh-bar-container {
+	display: flex;
+	height: 8px;
+	border-radius: 4px;
+	overflow: hidden;
+	margin-bottom: 20px;
+	background: var(--default-bg, #eee);
+}
+
+.fh-bar-healthy { background: #40c463; }
+.fh-bar-stale { background: #f0ad4e; }
+.fh-bar-error { background: #d9534f; }
+
+/* Tabelle */
+.fh-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+	margin-bottom: 16px;
+}
+
+.fh-table th {
+	text-align: left;
+	padding: 6px 8px;
+	border-bottom: 2px solid var(--border-color, #ddd);
+	font-weight: 600;
+	font-size: 12px;
+	color: var(--dim-text, #888);
+}
+
+.fh-table td {
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--border-color, #eee);
+	vertical-align: top;
+}
+
+.fh-feed-name {
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: 500;
+}
+
+.fh-detail {
+	max-width: 250px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--dim-text, #888);
+	font-size: 12px;
+}
+
+/* Badges */
+.fh-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.fh-badge-error { background: #fde8e8; color: #d9534f; }
+.fh-badge-stale { background: #fef3e0; color: #f0ad4e; }
+.fh-badge-ok { background: #e6f9e6; color: #40c463; }
+
+/* Fehler-Log */
+.fh-error-log {
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.fh-error-entry {
+	padding: 4px 0;
+	font-size: 12px;
+	border-bottom: 1px solid var(--border-color, #eee);
+}
+
+.fh-error-time {
+	color: var(--dim-text, #888);
+}
+
+.fh-error-msg {
+	color: #d9534f;
+}
+
+.fh-dashboard h3 {
+	font-size: 14px;
+	font-weight: 600;
+	margin: 16px 0 8px 0;
+}
