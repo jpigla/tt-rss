@@ -1,0 +1,23 @@
+.pkm-export-btn {
+	cursor: pointer;
+}
+
+.pkm-dropdown {
+	background: var(--default-bg, #fff);
+	border: 1px solid var(--border-color, #ccc);
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	min-width: 150px;
+	padding: 4px 0;
+}
+
+.pkm-menu-item {
+	padding: 8px 16px;
+	cursor: pointer;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+.pkm-menu-item:hover {
+	background: var(--default-highlight-bg, #e8e8e8);
+}
