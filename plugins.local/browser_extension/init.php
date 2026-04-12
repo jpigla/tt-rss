@@ -96,7 +96,7 @@ class Browser_Extension extends Plugin {
 	 * API-Key aus Input validieren. Gibt owner_uid zurück oder sendet Fehler.
 	 * @return int|false
 	 */
-	private function authenticate(array $input) {
+	private function authenticate_api(array $input) {
 		$api_key = $input['api_key'] ?? '';
 
 		if (empty($api_key)) {
@@ -238,7 +238,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
@@ -281,7 +281,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
@@ -353,7 +353,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
@@ -427,7 +427,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
@@ -465,7 +465,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
@@ -521,7 +521,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$id = (int)($input['id'] ?? 0);
@@ -549,7 +549,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$id = (int)($input['id'] ?? 0);
@@ -576,7 +576,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$labels = Labels::get_all($owner_uid);
@@ -592,7 +592,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
@@ -649,7 +649,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
@@ -693,7 +693,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
@@ -727,7 +727,7 @@ class Browser_Extension extends Plugin {
 		if ($this->handle_preflight()) return;
 
 		$input = $this->read_input();
-		$owner_uid = $this->authenticate($input);
+		$owner_uid = $this->authenticate_api($input);
 		if (!$owner_uid) return;
 
 		$url = strip_tags($input['url'] ?? '');
