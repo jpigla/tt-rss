@@ -279,7 +279,7 @@ body.ttrss_main .hl .feed a {
   display: inline-block;
   padding: 1px 4px;
   font-size: 11px;
-  font-style: normal;
+  font-style: italic;
   font-weight: normal;
   color: black;
 }

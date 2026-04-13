@@ -277,6 +277,9 @@ const ReadwiseTheme = {
 		document.querySelectorAll('.cdm:not([data-rw-enhanced])').forEach(function (row) {
 			ReadwiseTheme.enhanceRow(row);
 		});
+		document.querySelectorAll('.hl:not([data-rw-hl-done])').forEach(function (row) {
+			ReadwiseTheme.enhanceHlRow(row);
+		});
 	},
 
 	/**
@@ -376,6 +379,73 @@ const ReadwiseTheme = {
 		});
 	},
 
+	/**
+	 * Erweitert eine .hl-Zeile (Drei-Panel-Modus) mit Readwise-Layout:
+	 * - Unread-Dot hinzufuegen
+	 * - Favicon klickbar machen und nach links verschieben
+	 * - Preview-Text aus dem Titel entfernen
+	 * - Labels aus dem Titel herausziehen
+	 * - Feed-Link und Score-Bereich ausblenden
+	 */
+	enhanceHlRow: function (row) {
+		if (row.dataset.rwHlDone) return;
+		row.dataset.rwHlDone = '1';
+
+		var left = row.querySelector('.left');
+		if (!left) return;
+
+		// 1. Unread-Dot einfuegen (nach Checkbox, vor star)
+		var markedPic = left.querySelector('.marked-pic');
+		if (markedPic && !left.querySelector('.hl-unread-dot')) {
+			var dot = document.createElement('span');
+			dot.className = 'hl-unread-dot';
+			var articleId = row.getAttribute('data-article-id');
+			dot.setAttribute('title', 'Gelesen/Ungelesen umschalten');
+			dot.addEventListener('click', function (e) {
+				e.stopPropagation();
+				Headlines.toggleUnread(parseInt(articleId));
+			});
+			left.insertBefore(dot, markedPic);
+		}
+
+		// 2. Favicon klickbar machen — aus .right holen und vor .title einfuegen
+		var rightDiv = row.querySelector('.right');
+		var iconFeed = rightDiv ? rightDiv.querySelector('.icon-feed') : null;
+		var titleDiv = row.querySelector('div.title');
+
+		if (iconFeed && titleDiv) {
+			var feedId = row.getAttribute('data-orig-feed-id');
+			var feedTitle = row.getAttribute('data-orig-feed-title') || '';
+
+			var faviconSpan = iconFeed.cloneNode(true);
+			faviconSpan.className = 'icon-feed hl-favicon';
+			faviconSpan.setAttribute('title', 'Nur Artikel von ' + feedTitle + ' anzeigen');
+			faviconSpan.addEventListener('click', function (e) {
+				e.stopPropagation();
+				Feeds.open({feed: parseInt(feedId)});
+			});
+			row.insertBefore(faviconSpan, titleDiv);
+		}
+
+		// 3. Preview-Text entfernen
+		var preview = row.querySelector('.preview');
+		if (preview) preview.remove();
+
+		// 4. Labels aus dem Titel-Div herausziehen
+		var hlContent = row.querySelector('.hl-content');
+		if (hlContent) {
+			var labelsSpan = hlContent.querySelector('.label-list');
+			if (labelsSpan) {
+				titleDiv.parentNode.insertBefore(labelsSpan, titleDiv.nextSibling);
+			}
+		}
+
+		// 5. Feed-Link und Score-Bereich ausblenden (CSS-Fallback)
+		var feedSpan = row.querySelector('.feed.vfeedMenuAttach');
+		if (feedSpan) feedSpan.style.display = 'none';
+		if (rightDiv) rightDiv.style.display = 'none';
+	},
+
 	init: function () {
 		ReadwiseTheme.renameStarredFolder();
 		ReadwiseTheme.bindEscapeClose();
@@ -394,9 +464,17 @@ const ReadwiseTheme = {
 						ReadwiseTheme.enhanceRow(node);
 					}
 
+					// HL-Zeilen (Drei-Panel-Modus) erweitern
+					if (node.classList && node.classList.contains('hl')) {
+						ReadwiseTheme.enhanceHlRow(node);
+					}
+
 					if (node.querySelectorAll) {
 						node.querySelectorAll('.cdm:not([data-rw-enhanced])').forEach(function (row) {
 							ReadwiseTheme.enhanceRow(row);
+						});
+						node.querySelectorAll('.hl:not([data-rw-hl-done])').forEach(function (row) {
+							ReadwiseTheme.enhanceHlRow(row);
 						});
 					}
 				}

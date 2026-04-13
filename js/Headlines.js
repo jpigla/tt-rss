@@ -463,7 +463,7 @@ const Headlines = {
 		if (headlines.vfeed_group_enabled && hl.feed_title && this.vgroup_last_feed !== hl.feed_id) {
 			const vgrhdr = `<div data-feed-id='${hl.feed_id}' class='feed-title'>
 									<div class="pull-right icon-feed" title="${App.escapeHtml(hl.feed_title)}"
-										onclick="Feeds.open({feed:${hl.feed_id}})">${Feeds.renderIcon(hl.icon_feed_id || hl.feed_id, hl.has_icon)}</div>
+										onclick="Feeds.open({feed:${hl.feed_id}})">${Feeds.renderIcon(hl.feed_id, hl.has_icon)}</div>
 									<a class="title" title="${__('Open site')}" target="_blank" rel="noopener noreferrer" href="${App.escapeHtml(App.sanitizeUrl(hl.site_url))}">${hl.feed_title}</a>
 									<a class="catchup" title="${__('mark feed as read')}" onclick="Feeds.catchupFeedInGroup(${hl.feed_id})" href="#">
 										<i class="icon-done material-icons">done_all</i>
@@ -522,7 +522,7 @@ const Headlines = {
 								<i class="material-icons icon-score" title="${hl.score}" onclick="Article.setScore(${hl.id}, this)">${Article.getScorePic(hl.score)}</i>
 
 								<span class="icon-feed" title="${App.escapeHtml(hl.feed_title)}" onclick="Feeds.open({feed:${hl.feed_id}})">
-									${Feeds.renderIcon(hl.icon_feed_id || hl.feed_id, hl.has_icon)}
+									${Feeds.renderIcon(hl.feed_id, hl.has_icon)}
 								</span>
 							</div>
 
@@ -570,21 +570,26 @@ const Headlines = {
 				onmouseout="Article.mouseOut(${hl.id})">
 			<div class="left">
 				<input dojoType="dijit.form.CheckBox" type="checkbox" onclick="Headlines.onRowChecked(this)" class='rchk'>
-					<span class="hl-unread-dot" onclick="event.stopPropagation(); Headlines.toggleUnread(${hl.id})" title="Gelesen/Ungelesen umschalten"></span>
 					<i class="marked-pic marked-${hl.id} material-icons" onclick="Headlines.toggleMark(${hl.id})">star</i>
 					<i class="pub-pic pub-${hl.id} material-icons" onclick="Headlines.togglePub(${hl.id})">rss_feed</i>
 			</div>
-			<span onclick="event.stopPropagation(); Feeds.open({feed:${hl.feed_id}})" class="icon-feed hl-favicon" title="Nur Artikel von ${App.escapeHtml(hl.feed_title)} anzeigen">${Feeds.renderIcon(hl.icon_feed_id || hl.feed_id, hl.has_icon)}</span>
 			<div onclick="return Headlines.click(event, ${hl.id})" class="title">
 				${App.getInitParam("debug_headline_ids") ? `<span class="text-muted small">A: ${hl.id} F: ${hl.feed_id}</span>` : ""}
 				<span data-article-id="${hl.id}" class="hl-content hlMenuAttach">
-					<a class="title" href="${App.escapeHtml(App.sanitizeUrl(hl.link))}">${hl.title}</a>
+					<a class="title" href="${App.escapeHtml(App.sanitizeUrl(hl.link))}">${hl.title} <span class="preview">${hl.content_preview}</span></a>
 					<span class="author">${hl.author}</span>
+					${Article.renderLabels(hl.id, hl.labels)}
 				</span>
 			</div>
-			${Article.renderLabels(hl.id, hl.labels)}
+			<span class="feed vfeedMenuAttach" data-feed-id="${hl.feed_id}">
+				<a title="${__('Open site')}" style="background : ${hl.feed_bg_color}" target="_blank" rel="noopener noreferrer" href="${App.escapeHtml(App.sanitizeUrl(hl.site_url))}">${hl.feed_title}</a>
+			</span>
 			<div title="${hl.imported}">
 				<span class="updated">${hl.updated}</span>
+			</div>
+			<div class="right">
+				<i class="material-icons icon-score" title="${hl.score}" onclick="Article.setScore(${hl.id}, this)">${Article.getScorePic(hl.score)}</i>
+				<span onclick="Feeds.open({feed:${hl.feed_id}})" class="icon-feed" title="${App.escapeHtml(hl.feed_title)}">${Feeds.renderIcon(hl.feed_id, hl.has_icon)}</span>
 			</div>
 			</div>
 		`;
@@ -663,10 +668,6 @@ const Headlines = {
 						<option></option>
 						<option value='headlines_catchupSelection'>${__('Mark as read')}</option>
 						<option value='article_selectionSetScore'>${__('Set score')}</option>
-						${headlines.id !== 0 || headlines.is_cat ?
-							`<option value='headlines_archiveSelection'>${__('Archive')}</option>` : ''}
-						${headlines.id === 0 && !headlines.is_cat ?
-							`<option value='headlines_unarchiveSelection'>${__('Unarchive')}</option>` : ''}
 						${tb.plugin_menu_items !== '' ?
 							`
 							<option></option>
@@ -722,12 +723,6 @@ const Headlines = {
 						break;
 					case 'article_selectionOpenInNewWindow':
 						Article.selectionOpenInNewWindow();
-						break;
-					case 'headlines_archiveSelection':
-						Headlines.archiveSelection();
-						break;
-					case 'headlines_unarchiveSelection':
-						Headlines.unarchiveSelection();
 						break;
 					case 'headlines_deleteSelection':
 						Headlines.deleteSelection();
@@ -1139,34 +1134,6 @@ const Headlines = {
 			this.onLabelsUpdated(reply);
 		});
 	},
-	archiveSelection: function () {
-		const rows = Headlines.getSelected();
-
-		if (rows.length === 0) {
-			alert(__("No articles selected."));
-			return;
-		}
-
-		const query = {op: "RPC", method: "archiveSelection", ids: rows.toString()};
-
-		xhr.json("backend.php", query, () => {
-			Feeds.reloadCurrent();
-		});
-	},
-	unarchiveSelection: function () {
-		const rows = Headlines.getSelected();
-
-		if (rows.length === 0) {
-			alert(__("No articles selected."));
-			return;
-		}
-
-		const query = {op: "RPC", method: "unarchiveSelection", ids: rows.toString()};
-
-		xhr.json("backend.php", query, () => {
-			Feeds.reloadCurrent();
-		});
-	},
 	deleteSelection: function () {
 		const rows = Headlines.getSelected();
 
@@ -1493,33 +1460,6 @@ const Headlines = {
 			}
 		}));
 
-		menu.addChild(new dijit.MenuSeparator());
-
-		const archiveItem = new dijit.MenuItem({
-			label: __("Archive"),
-			onClick: function () {
-				const isArchive = Feeds.getActive() === 0 && !Feeds.activeIsCat();
-				const method = isArchive ? "unarchiveSelection" : "archiveSelection";
-
-				const id = parseInt(this.getParent().currentTarget.getAttribute('data-article-id'));
-
-				let ids = Headlines.getSelected();
-				ids = ids.includes(id) ? ids : [id];
-
-				const query = {op: "RPC", method: method, ids: ids.toString()};
-
-				xhr.json("backend.php", query, () => {
-					Feeds.reloadCurrent();
-				});
-			}
-		});
-
-		menu.addChild(archiveItem);
-
-		dojo.connect(menu, '_openMyself', function () {
-			const isArchive = Feeds.getActive() === 0 && !Feeds.activeIsCat();
-			archiveItem.set('label', isArchive ? __("Unarchive") : __("Archive"));
-		});
 
 		const labels = App.getInitParam("labels");
 

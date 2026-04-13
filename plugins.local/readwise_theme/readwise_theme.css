@@ -433,6 +433,7 @@ body.ttrss_main .hl .updated {
 
 body.ttrss_main .hl .feed a {
 	color: var(--rw-text-muted) !important;
+	font-style: normal !important;
 }
 
 body.ttrss_main .hl .feed a:hover {
@@ -1574,5 +1575,312 @@ body.ttrss_main .hl.marked.published i.marked-pic::before {
 
 body.ttrss_main .cdm.marked.published .left i.marked-pic::before {
 	content: 'add_link';
+}
+
+
+/* ─── Kontextmenüs & Dropdown-Menüs ─────────────────────────── */
+
+body.ttrss_main .dijitMenu,
+body.ttrss_main .dijitMenuPopup {
+	background: var(--rw-bg-elevated) !important;
+	border: 1px solid var(--rw-border-focus) !important;
+	border-radius: var(--rw-radius-md) !important;
+	box-shadow: var(--rw-shadow-lg) !important;
+	padding: 4px 0 !important;
+}
+
+body.ttrss_main .dijitMenu .dijitMenuItem {
+	background: transparent !important;
+}
+
+body.ttrss_main .dijitMenu .dijitMenuItem .dijitMenuItemLabel {
+	color: var(--rw-text-secondary) !important;
+}
+
+body.ttrss_main .dijitMenu .dijitMenuItem.dijitMenuItemSelected,
+body.ttrss_main .dijitMenu .dijitMenuItem:hover {
+	background: var(--rw-bg-hover) !important;
+}
+
+body.ttrss_main .dijitMenu .dijitMenuItem.dijitMenuItemSelected .dijitMenuItemLabel,
+body.ttrss_main .dijitMenu .dijitMenuItem:hover .dijitMenuItemLabel {
+	color: var(--rw-text-bright) !important;
+}
+
+body.ttrss_main .dijitMenu .dijitMenuItem.dijitDisabled .dijitMenuItemLabel {
+	color: var(--rw-text-muted) !important;
+	opacity: 0.5;
+}
+
+body.ttrss_main .dijitMenu .dijitMenuSeparator td {
+	border-bottom-color: var(--rw-border) !important;
+}
+
+body.ttrss_main .dijitMenu .dijitMenuItem td {
+	border-color: transparent !important;
+}
+
+
+/* ─── Dropdown-Buttons & Select-Widgets ──────────────────────── */
+
+body.ttrss_main .dijitDropDownButton .dijitButtonNode,
+body.ttrss_main .dijitComboButton .dijitButtonNode {
+	background: var(--rw-bg-elevated) !important;
+	border-color: var(--rw-border) !important;
+	color: var(--rw-text-secondary) !important;
+}
+
+body.ttrss_main .dijitDropDownButton:hover .dijitButtonNode,
+body.ttrss_main .dijitComboButton:hover .dijitButtonNode {
+	background: var(--rw-bg-hover) !important;
+	border-color: var(--rw-border-focus) !important;
+	color: var(--rw-text-primary) !important;
+}
+
+body.ttrss_main .dijitDropDownButton .dijitButtonContents,
+body.ttrss_main .dijitComboButton .dijitButtonContents {
+	color: var(--rw-text-secondary) !important;
+}
+
+body.ttrss_main .dijitSelect .dijitButtonContents {
+	background: var(--rw-bg-elevated) !important;
+	color: var(--rw-text-secondary) !important;
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_main .dijitSelect .dijitArrowButtonInner {
+	color: var(--rw-text-muted) !important;
+}
+
+body.ttrss_main .dijitSelect:hover .dijitButtonContents {
+	background: var(--rw-bg-hover) !important;
+	color: var(--rw-text-primary) !important;
+}
+
+
+/* ─── Text-Eingabefelder & Suche ─────────────────────────────── */
+
+body.ttrss_main .dijitTextBox .dijitInputContainer {
+	background: var(--rw-bg-elevated) !important;
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_main .dijitTextBox .dijitInputInner {
+	color: var(--rw-text-primary) !important;
+}
+
+body.ttrss_main .dijitTextBox .dijitPlaceHolder {
+	color: var(--rw-text-muted) !important;
+}
+
+body.ttrss_main .dijitTextBox.dijitFocused .dijitInputContainer,
+body.ttrss_main .dijitTextBox:hover .dijitInputContainer {
+	border-color: var(--rw-border-focus) !important;
+}
+
+body.ttrss_main input[type="text"],
+body.ttrss_main input[type="password"],
+body.ttrss_main input[type="email"],
+body.ttrss_main input[type="url"],
+body.ttrss_main input[type="number"] {
+	background: var(--rw-bg-elevated) !important;
+	color: var(--rw-text-primary) !important;
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_main input[type="text"]:focus,
+body.ttrss_main input[type="password"]:focus {
+	border-color: var(--rw-border-focus) !important;
+	outline: none;
+}
+
+body.ttrss_main .dijitNumberSpinner .dijitArrowButton {
+	background: var(--rw-bg-elevated) !important;
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_main .dijitNumberSpinner .dijitArrowButton:hover {
+	background: var(--rw-bg-hover) !important;
+}
+
+
+/* ─── Accordion (Einstellungen) ──────────────────────────────── */
+
+body.ttrss_main .dijitAccordionContainer {
+	box-shadow: 0 0 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.ttrss_main .dijitAccordionTitle {
+	background: var(--rw-bg-surface) !important;
+	color: var(--rw-text-secondary) !important;
+	border-bottom: 1px solid var(--rw-border) !important;
+}
+
+body.ttrss_main .dijitAccordionTitle:hover {
+	background: var(--rw-bg-hover) !important;
+	color: var(--rw-text-primary) !important;
+}
+
+body.ttrss_main .dijitAccordionTitle i.material-icons {
+	color: var(--rw-accent) !important;
+}
+
+body.ttrss_main .dijitAccordionInnerContainer {
+	background: var(--rw-bg-surface) !important;
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_main .dijitAccordionInnerContainerSelected .dijitAccordionTitle {
+	background: var(--rw-bg-elevated) !important;
+	color: var(--rw-text-bright) !important;
+	border-bottom-color: var(--rw-accent) !important;
+}
+
+body.ttrss_main .dijitAccordionChildWrapper {
+	background: var(--rw-bg-surface) !important;
+}
+
+
+/* ─── Einstellungsseite (Prefs) ──────────────────────────────── */
+
+body.ttrss_prefs {
+	background: var(--rw-bg-deep) !important;
+	color: var(--rw-text-primary) !important;
+	font-family: var(--rw-font-ui);
+}
+
+body.ttrss_prefs a {
+	color: var(--rw-accent) !important;
+}
+
+body.ttrss_prefs a:hover {
+	color: var(--rw-accent-hover) !important;
+}
+
+body.ttrss_prefs #main {
+	background: var(--rw-bg-main) !important;
+}
+
+body.ttrss_prefs .dijitTabContainer {
+	background: var(--rw-bg-main) !important;
+}
+
+body.ttrss_prefs .dijitTabPaneWrapper {
+	background: var(--rw-bg-surface) !important;
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_prefs .dijitTab:not(.dijitTabChecked) {
+	background: var(--rw-bg-sidebar) !important;
+	color: var(--rw-text-muted) !important;
+}
+
+body.ttrss_prefs .dijitTab.dijitTabChecked {
+	background: var(--rw-bg-surface) !important;
+	color: var(--rw-text-bright) !important;
+}
+
+body.ttrss_prefs .dijitContentPane {
+	color: var(--rw-text-primary) !important;
+}
+
+body.ttrss_prefs fieldset {
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_prefs fieldset > label {
+	color: var(--rw-text-secondary) !important;
+}
+
+body.ttrss_prefs .text-muted {
+	color: var(--rw-text-muted) !important;
+}
+
+body.ttrss_prefs .dijitButton .dijitButtonNode {
+	background: var(--rw-bg-elevated) !important;
+	border-color: var(--rw-border) !important;
+	color: var(--rw-text-secondary) !important;
+}
+
+body.ttrss_prefs .dijitButton .dijitButtonNode:hover {
+	background: var(--rw-bg-hover) !important;
+	color: var(--rw-text-primary) !important;
+}
+
+body.ttrss_prefs hr {
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_prefs #footer {
+	color: var(--rw-text-muted) !important;
+}
+
+body.ttrss_prefs #footer a {
+	color: var(--rw-text-muted) !important;
+}
+
+
+/* ─── Dialoge (vollständig) ──────────────────────────────────── */
+
+body.ttrss_main .dijitDialogUnderlayWrapper .dijitDialogUnderlay {
+	background: rgba(0, 0, 0, 0.6) !important;
+}
+
+body.ttrss_main .dijitDialog .dijitDialogTitleBar {
+	background: var(--rw-bg-elevated) !important;
+	color: var(--rw-text-bright) !important;
+	border-bottom: 1px solid var(--rw-border) !important;
+}
+
+body.ttrss_main .dijitDialog .dijitDialogTitle {
+	color: var(--rw-text-bright) !important;
+}
+
+body.ttrss_main .dijitDialog .dijitDialogCloseIcon {
+	color: var(--rw-text-muted) !important;
+}
+
+body.ttrss_main .dijitDialog .dijitDialogCloseIcon:hover {
+	color: var(--rw-text-bright) !important;
+}
+
+body.ttrss_main .dijitDialog fieldset {
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_main .dijitDialog fieldset > label {
+	color: var(--rw-text-secondary) !important;
+}
+
+body.ttrss_main .dijitDialog .dijitTextBox .dijitInputContainer {
+	background: var(--rw-bg-main) !important;
+	border-color: var(--rw-border) !important;
+}
+
+body.ttrss_main .dijitDialog .dijitSelect .dijitButtonContents {
+	background: var(--rw-bg-main) !important;
+}
+
+
+/* ─── Toolbar (Navigationsleiste Dropdowns) ──────────────────── */
+
+body.ttrss_main #toolbar-main .dijitDropDownButton .dijitButtonNode,
+body.ttrss_main #toolbar-main .dijitComboButton .dijitButtonNode {
+	background: transparent !important;
+	border-color: transparent !important;
+}
+
+body.ttrss_main #toolbar-main .dijitDropDownButton:hover .dijitButtonNode,
+body.ttrss_main #toolbar-main .dijitComboButton:hover .dijitButtonNode {
+	background: var(--rw-bg-hover) !important;
+	border-radius: var(--rw-radius-sm);
+}
+
+body.ttrss_main #toolbar-main .dijitDropDownButton .dijitButtonContents {
+	color: var(--rw-text-secondary) !important;
+}
+
+body.ttrss_main #toolbar-main .dijitDropDownButton:hover .dijitButtonContents {
+	color: var(--rw-text-primary) !important;
 }
 
