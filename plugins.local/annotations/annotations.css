@@ -448,3 +448,90 @@
 	border-color: var(--color-accent, #257fad);
 	box-shadow: 0 0 0 2px rgba(37, 127, 173, 0.2);
 }
+
+/* ── Marker-Input (Annotations) ────────────────── */
+.ann-markers-wrapper {
+	margin-bottom: 8px;
+}
+
+.ann-markers-label {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--default-fg, #999);
+	margin-bottom: 4px;
+}
+
+.ann-markers-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 4px;
+}
+
+.ann-marker-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 11px;
+	background: var(--color-accent, #257fad);
+	color: #fff;
+	line-height: 1.4;
+}
+
+.ann-marker-chip-remove {
+	cursor: pointer;
+	font-size: 13px;
+	line-height: 1;
+	opacity: 0.7;
+	margin-left: 2px;
+}
+
+.ann-marker-chip-remove:hover {
+	opacity: 1;
+}
+
+.ann-markers-input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 4px 8px;
+	border: 1px solid var(--border-default, #ccc);
+	border-radius: 4px;
+	font-size: 12px;
+	font-family: inherit;
+	color: var(--default-fg, #333);
+	background: var(--default-bg, #fff);
+	outline: none;
+}
+
+.ann-markers-input:focus {
+	border-color: var(--color-accent, #257fad);
+	box-shadow: 0 0 0 2px rgba(37, 127, 173, 0.2);
+}
+
+.ann-markers-dropdown {
+	position: absolute;
+	z-index: 10002;
+	background: var(--default-bg, #fff);
+	border: 1px solid var(--border-default, #ccc);
+	border-radius: 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	max-height: 160px;
+	overflow-y: auto;
+	margin-top: 2px;
+}
+
+.ann-markers-dropdown-item {
+	padding: 5px 10px;
+	font-size: 12px;
+	cursor: pointer;
+	color: var(--default-fg, #333);
+}
+
+.ann-markers-dropdown-item:hover {
+	background: var(--color-accent, #257fad);
+	color: #fff;
+}

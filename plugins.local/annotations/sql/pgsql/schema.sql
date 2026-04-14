@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS ttrss_plugin_annotations (
   highlighted_text TEXT NOT NULL DEFAULT '',
   note TEXT NOT NULL DEFAULT '',
   color VARCHAR(20) NOT NULL DEFAULT '#fff3cd',
+  markers TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS ttrss_plugin_ann_ref_idx ON ttrss_plugin_annotations(ref_id, owner_uid);

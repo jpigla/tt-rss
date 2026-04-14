@@ -41,7 +41,7 @@ class Annotations extends Plugin {
 	}
 
 	function csrf_ignore($method): bool {
-		return in_array($method, ["export_csv", "export_all_csv", "get_article_tags", "add_article_tag"]);
+		return in_array($method, ["export_csv", "export_all_csv", "get_article_tags", "add_article_tag", "get_all_markers"]);
 	}
 
 	function hook_render_article_cdm($article) {
@@ -57,7 +57,7 @@ class Annotations extends Plugin {
 		if (!$id) return $article;
 
 		$sth = $this->pdo->prepare("SELECT id, selector_path, start_offset, end_offset,
-			highlighted_text, note, color FROM ttrss_plugin_annotations
+			highlighted_text, note, color, markers FROM ttrss_plugin_annotations
 			WHERE ref_id = ? AND owner_uid = ? ORDER BY id");
 		$sth->execute([$id, $_SESSION['uid']]);
 
@@ -238,7 +238,7 @@ class Annotations extends Plugin {
 				$detail_params = array_merge($detail_params, $ref_ids);
 				$detail_where = implode(' AND ', $detail_conditions);
 
-				$sth = $this->pdo->prepare("SELECT a.id, a.ref_id, a.highlighted_text, a.note, a.color,
+				$sth = $this->pdo->prepare("SELECT a.id, a.ref_id, a.highlighted_text, a.note, a.color, a.markers,
 					to_char(a.created_at, 'DD.MM.YYYY HH24:MI') as formatted_date,
 					e.title AS article_title, e.link
 					FROM ttrss_plugin_annotations a
@@ -263,6 +263,7 @@ class Annotations extends Plugin {
 						'highlighted_text' => $row['highlighted_text'],
 						'note' => $row['note'],
 						'color' => $row['color'],
+						'markers' => $row['markers'],
 						'formatted_date' => $row['formatted_date']
 					];
 				}
@@ -297,6 +298,7 @@ class Annotations extends Plugin {
 		$start_offset = (int)clean($_REQUEST['start_offset'] ?? 0);
 		$end_offset = (int)clean($_REQUEST['end_offset'] ?? 0);
 		$selector_path = clean($_REQUEST['selector_path'] ?? '');
+		$markers = clean($_REQUEST['markers'] ?? '');
 
 		if (!$ref_id || empty($highlighted_text)) {
 			print json_encode(['error' => 'Fehlende Daten']);
@@ -304,10 +306,10 @@ class Annotations extends Plugin {
 		}
 
 		$sth = $this->pdo->prepare("INSERT INTO ttrss_plugin_annotations
-			(ref_id, owner_uid, selector_path, start_offset, end_offset, highlighted_text, note, color)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+			(ref_id, owner_uid, selector_path, start_offset, end_offset, highlighted_text, note, color, markers)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		$sth->execute([$ref_id, $_SESSION['uid'], $selector_path,
-			$start_offset, $end_offset, $highlighted_text, $note, $color]);
+			$start_offset, $end_offset, $highlighted_text, $note, $color, $markers]);
 
 		$id = $this->pdo->lastInsertId();
 
@@ -319,6 +321,7 @@ class Annotations extends Plugin {
 		$note = clean($_REQUEST['note'] ?? '');
 		$color_raw = clean($_REQUEST['color'] ?? '#fff3cd');
 		$color = preg_match('/^#[0-9a-fA-F]{3,8}$/', $color_raw) ? $color_raw : '#fff3cd';
+		$markers = clean($_REQUEST['markers'] ?? '');
 
 		if (!$id) {
 			print json_encode(['error' => 'Fehlende ID']);
@@ -326,8 +329,8 @@ class Annotations extends Plugin {
 		}
 
 		$sth = $this->pdo->prepare("UPDATE ttrss_plugin_annotations
-			SET note = ?, color = ? WHERE id = ? AND owner_uid = ?");
-		$sth->execute([$note, $color, $id, $_SESSION['uid']]);
+			SET note = ?, color = ?, markers = ? WHERE id = ? AND owner_uid = ?");
+		$sth->execute([$note, $color, $markers, $id, $_SESSION['uid']]);
 
 		print json_encode(['status' => 'ok']);
 	}
@@ -336,7 +339,7 @@ class Annotations extends Plugin {
 		$ref_id = (int)clean($_REQUEST['article_id'] ?? 0);
 
 		$sth = $this->pdo->prepare("SELECT id, selector_path, start_offset, end_offset,
-			highlighted_text, note, color FROM ttrss_plugin_annotations
+			highlighted_text, note, color, markers FROM ttrss_plugin_annotations
 			WHERE ref_id = ? AND owner_uid = ? ORDER BY id");
 		$sth->execute([$ref_id, $_SESSION['uid']]);
 
@@ -403,7 +406,7 @@ class Annotations extends Plugin {
 	function export_csv(): void {
 		$ref_id = (int)clean($_REQUEST['ref_id'] ?? 0);
 
-		$sth = $this->pdo->prepare("SELECT a.highlighted_text, a.note, a.color,
+		$sth = $this->pdo->prepare("SELECT a.highlighted_text, a.note, a.color, a.markers,
 			to_char(a.created_at, 'DD.MM.YYYY HH24:MI') as formatted_date,
 			e.title AS article_title, e.link AS article_url
 			FROM ttrss_plugin_annotations a
@@ -417,7 +420,7 @@ class Annotations extends Plugin {
 
 		$out = fopen('php://output', 'w');
 		fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-		fputcsv($out, ['Artikel', 'URL', 'Markierter Text', 'Notiz', 'Farbe', 'Datum'], ';');
+		fputcsv($out, ['Artikel', 'URL', 'Markierter Text', 'Notiz', 'Farbe', 'Marker', 'Datum'], ';');
 
 		while ($row = $sth->fetch()) {
 			fputcsv($out, [
@@ -426,6 +429,7 @@ class Annotations extends Plugin {
 				$row['highlighted_text'],
 				$row['note'],
 				$row['color'],
+				$row['markers'],
 				$row['formatted_date']
 			], ';');
 		}
@@ -434,7 +438,7 @@ class Annotations extends Plugin {
 	}
 
 	function export_all_csv(): void {
-		$sth = $this->pdo->prepare("SELECT a.highlighted_text, a.note, a.color,
+		$sth = $this->pdo->prepare("SELECT a.highlighted_text, a.note, a.color, a.markers,
 			to_char(a.created_at, 'DD.MM.YYYY HH24:MI') as formatted_date,
 			e.title AS article_title, e.link AS article_url
 			FROM ttrss_plugin_annotations a
@@ -448,7 +452,7 @@ class Annotations extends Plugin {
 
 		$out = fopen('php://output', 'w');
 		fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-		fputcsv($out, ['Artikel', 'URL', 'Markierter Text', 'Notiz', 'Farbe', 'Datum'], ';');
+		fputcsv($out, ['Artikel', 'URL', 'Markierter Text', 'Notiz', 'Farbe', 'Marker', 'Datum'], ';');
 
 		while ($row = $sth->fetch()) {
 			fputcsv($out, [
@@ -457,6 +461,7 @@ class Annotations extends Plugin {
 				$row['highlighted_text'],
 				$row['note'],
 				$row['color'],
+				$row['markers'],
 				$row['formatted_date']
 			], ';');
 		}
@@ -527,6 +532,22 @@ class Annotations extends Plugin {
 		$sth->execute([implode(',', $all_tags), $int_id, $owner_uid]);
 
 		print json_encode(['status' => 'ok', 'tag' => $tag]);
+	}
+
+	function get_all_markers(): void {
+		$sth = $this->pdo->prepare("SELECT DISTINCT unnest(string_to_array(markers, ',')) AS marker
+			FROM ttrss_plugin_annotations
+			WHERE owner_uid = ? AND markers != ''
+			ORDER BY marker");
+		$sth->execute([$_SESSION['uid']]);
+
+		$markers = [];
+		while ($row = $sth->fetch()) {
+			$m = trim($row['marker']);
+			if ($m !== '') $markers[] = $m;
+		}
+
+		print json_encode(array_values(array_unique($markers)));
 	}
 
 	function api_version() {

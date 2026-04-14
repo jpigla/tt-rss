@@ -15,6 +15,119 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 
 			_wrapping: false,
 			_observer: null,
+			_markersCache: null,
+
+			_loadMarkersCache: function (callback) {
+				if (Plugins.Annotations._markersCache !== null) {
+					if (callback) callback(Plugins.Annotations._markersCache);
+					return;
+				}
+				xhr.json("backend.php", App.getPhArgs("annotations", "get_all_markers", {}), function (reply) {
+					Plugins.Annotations._markersCache = reply || [];
+					if (callback) callback(Plugins.Annotations._markersCache);
+				});
+			},
+
+			_createMarkersInput: function (container, currentMarkers) {
+				var wrapper = document.createElement('div');
+				wrapper.className = 'ann-markers-wrapper';
+
+				var label = document.createElement('div');
+				label.className = 'ann-markers-label';
+				label.textContent = __('Marker');
+				wrapper.appendChild(label);
+
+				var chipsRow = document.createElement('div');
+				chipsRow.className = 'ann-markers-chips';
+				wrapper.appendChild(chipsRow);
+
+				var input = document.createElement('input');
+				input.type = 'text';
+				input.className = 'ann-markers-input';
+				input.placeholder = __('Marker eingeben...');
+				wrapper.appendChild(input);
+
+				var dropdown = document.createElement('div');
+				dropdown.className = 'ann-markers-dropdown';
+				dropdown.style.display = 'none';
+				wrapper.appendChild(dropdown);
+
+				// Bestehende Marker als Chips rendern
+				var markers = (currentMarkers || '').split(',').map(function (m) { return m.trim(); }).filter(Boolean);
+
+				function renderChips() {
+					while (chipsRow.firstChild) chipsRow.removeChild(chipsRow.firstChild);
+					markers.forEach(function (m, idx) {
+						var chip = document.createElement('span');
+						chip.className = 'ann-marker-chip';
+						chip.textContent = m;
+						var removeBtn = document.createElement('span');
+						removeBtn.className = 'ann-marker-chip-remove';
+						removeBtn.textContent = '\u00d7';
+						removeBtn.addEventListener('click', function () {
+							markers.splice(idx, 1);
+							renderChips();
+						});
+						chip.appendChild(removeBtn);
+						chipsRow.appendChild(chip);
+					});
+				}
+				renderChips();
+
+				function addMarker(val) {
+					val = val.trim().toLowerCase();
+					if (val && markers.indexOf(val) === -1) {
+						markers.push(val);
+						renderChips();
+						Plugins.Annotations._markersCache = null;
+					}
+					input.value = '';
+					dropdown.style.display = 'none';
+				}
+
+				input.addEventListener('keydown', function (e) {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+						if (input.value.trim()) addMarker(input.value);
+					} else if (e.key === ',' || e.key === 'Tab') {
+						if (input.value.trim()) {
+							e.preventDefault();
+							addMarker(input.value);
+						}
+					}
+				});
+
+				input.addEventListener('input', function () {
+					var val = input.value.trim().toLowerCase();
+					if (!val) { dropdown.style.display = 'none'; return; }
+					Plugins.Annotations._loadMarkersCache(function (allMarkers) {
+						var filtered = allMarkers.filter(function (m) {
+							return m.toLowerCase().indexOf(val) !== -1 && markers.indexOf(m) === -1;
+						}).slice(0, 8);
+						if (filtered.length === 0) { dropdown.style.display = 'none'; return; }
+						while (dropdown.firstChild) dropdown.removeChild(dropdown.firstChild);
+						filtered.forEach(function (m) {
+							var item = document.createElement('div');
+							item.className = 'ann-markers-dropdown-item';
+							item.textContent = m;
+							item.addEventListener('mousedown', function (e) {
+								e.preventDefault();
+								addMarker(m);
+							});
+							dropdown.appendChild(item);
+						});
+						dropdown.style.display = 'block';
+					});
+				});
+
+				input.addEventListener('blur', function () {
+					setTimeout(function () { dropdown.style.display = 'none'; }, 150);
+				});
+
+				container.appendChild(wrapper);
+
+				return function () { return markers.join(','); };
+			},
 
 			init: function () {
 				// Text-Selektion in Annotation-Wrappern
@@ -192,6 +305,7 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 								mark.dataset.annId = ann.id;
 								mark.dataset.annNote = ann.note || '';
 								mark.dataset.annColor = ann.color || '#fff3cd';
+								mark.dataset.annMarkers = ann.markers || '';
 								if (ann.note) {
 									mark.title = ann.note;
 									mark.classList.add('ann-has-note');
@@ -244,6 +358,7 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				var annId = mark.dataset.annId;
 				var currentNote = mark.dataset.annNote || '';
 				var currentColor = mark.dataset.annColor || '#fff3cd';
+				var currentMarkers = mark.dataset.annMarkers || '';
 				var articleId = wrapper.getAttribute('data-article-id');
 
 				var rect = mark.getBoundingClientRect();
@@ -288,6 +403,9 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				noteInput.rows = 2;
 				noteInput.value = currentNote;
 
+				var markersContainer = document.createElement('div');
+				var getMarkers = Plugins.Annotations._createMarkersInput(markersContainer, currentMarkers);
+
 				var btnRow = document.createElement('div');
 				btnRow.className = 'ann-btn-row';
 
@@ -298,17 +416,20 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 					var activeColor = popup.querySelector('.ann-color-active');
 					var color = activeColor ? activeColor.dataset.color : currentColor;
 					var note = noteInput.value;
+					var markersVal = getMarkers();
 
 					xhr.json("backend.php", App.getPhArgs("annotations", "update_annotation", {
 						id: annId,
 						note: note,
-						color: color
+						color: color,
+						markers: markersVal
 					}), function (reply) {
 						if (reply && reply.status === 'ok') {
 							Notify.info(__('Annotation aktualisiert'));
 							mark.style.backgroundColor = color;
 							mark.dataset.annNote = note;
 							mark.dataset.annColor = color;
+							mark.dataset.annMarkers = markersVal;
 							mark.title = note || '';
 							if (note) {
 								mark.classList.add('ann-has-note');
@@ -323,6 +444,7 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 									if (existing[i].id == annId) {
 										existing[i].note = note;
 										existing[i].color = color;
+										existing[i].markers = markersVal;
 										break;
 									}
 								}
@@ -355,6 +477,7 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 
 				popup.appendChild(colorRow);
 				popup.appendChild(noteInput);
+				popup.appendChild(markersContainer);
 				popup.appendChild(btnRow);
 				document.body.appendChild(popup);
 
@@ -476,7 +599,7 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				highlightBtn.addEventListener('click', function () {
 					var selectorPath = JSON.stringify({before: beforeText});
 					Plugins.Annotations.save(articleId, selectedText, '', '#fff3cd',
-						range.startOffset, range.endOffset, selectorPath);
+						range.startOffset, range.endOffset, selectorPath, '');
 					Plugins.Annotations.removeContextToolbar();
 					window.getSelection().removeAllRanges();
 				});
@@ -670,6 +793,9 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				noteInput.placeholder = __('Notiz hinzufügen (optional)...');
 				noteInput.rows = 2;
 
+				var markersContainer = document.createElement('div');
+				var getMarkers = Plugins.Annotations._createMarkersInput(markersContainer, '');
+
 				var btnRow = document.createElement('div');
 				btnRow.className = 'ann-btn-row';
 
@@ -685,7 +811,7 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 					var selectorPath = JSON.stringify({before: beforeText});
 
 					Plugins.Annotations.save(articleId, selectedText, note, color,
-						range.startOffset, range.endOffset, selectorPath);
+						range.startOffset, range.endOffset, selectorPath, getMarkers());
 
 					Plugins.Annotations.removePopup();
 					window.getSelection().removeAllRanges();
@@ -703,6 +829,7 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 
 				popup.appendChild(colorRow);
 				popup.appendChild(noteInput);
+				popup.appendChild(markersContainer);
 				popup.appendChild(btnRow);
 				document.body.appendChild(popup);
 
@@ -722,7 +849,7 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				});
 			},
 
-			save: function (articleId, text, note, color, startOffset, endOffset, selectorPath) {
+			save: function (articleId, text, note, color, startOffset, endOffset, selectorPath, markers) {
 				xhr.json("backend.php", App.getPhArgs("annotations", "save_annotation", {
 					ref_id: articleId,
 					highlighted_text: text,
@@ -730,7 +857,8 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 					color: color,
 					start_offset: startOffset,
 					end_offset: endOffset,
-					selector_path: selectorPath
+					selector_path: selectorPath,
+					markers: markers || ''
 				}), function (reply) {
 					if (reply && reply.status === 'ok') {
 						Notify.info(__('Annotation gespeichert'));
@@ -742,7 +870,8 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 								highlighted_text: text,
 								note: note,
 								color: color,
-								selector_path: selectorPath
+								selector_path: selectorPath,
+								markers: markers || ''
 							};
 							Plugins.Annotations.applyHighlights(wrapper, [newAnn]);
 
