@@ -41,7 +41,7 @@ class Annotations extends Plugin {
 	}
 
 	function csrf_ignore($method): bool {
-		return in_array($method, ["export_csv", "export_all_csv"]);
+		return in_array($method, ["export_csv", "export_all_csv", "get_article_tags", "add_article_tag"]);
 	}
 
 	function hook_render_article_cdm($article) {
@@ -462,6 +462,71 @@ class Annotations extends Plugin {
 		}
 
 		fclose($out);
+	}
+
+	function get_article_tags(): void {
+		$id = (int)clean($_REQUEST['id'] ?? 0);
+		$owner_uid = $_SESSION['uid'];
+
+		$sth = $this->pdo->prepare("SELECT tag_name FROM ttrss_tags
+			WHERE post_int_id = (
+				SELECT int_id FROM ttrss_user_entries WHERE ref_id = ? AND owner_uid = ?
+			) AND owner_uid = ?
+			ORDER BY tag_name");
+		$sth->execute([$id, $owner_uid, $owner_uid]);
+
+		$tags = [];
+		while ($row = $sth->fetch()) {
+			$tags[] = $row['tag_name'];
+		}
+
+		print json_encode($tags);
+	}
+
+	function add_article_tag(): void {
+		$id = (int)clean($_REQUEST['id'] ?? 0);
+		$tag = mb_strtolower(mb_substr(trim(clean($_REQUEST['tag'] ?? '')), 0, 250));
+		$owner_uid = $_SESSION['uid'];
+
+		if (!$id || $tag === '') {
+			print json_encode(['error' => 'Fehlende Daten']);
+			return;
+		}
+
+		$sth = $this->pdo->prepare("SELECT int_id FROM ttrss_user_entries
+			WHERE ref_id = ? AND owner_uid = ?");
+		$sth->execute([$id, $owner_uid]);
+		$row = $sth->fetch();
+
+		if (!$row) {
+			print json_encode(['error' => 'Artikel nicht gefunden']);
+			return;
+		}
+
+		$int_id = $row['int_id'];
+
+		// Nur einfügen wenn Tag noch nicht vorhanden
+		$sth = $this->pdo->prepare("INSERT INTO ttrss_tags (tag_name, owner_uid, post_int_id)
+			SELECT ?, ?, ?
+			WHERE NOT EXISTS (
+				SELECT 1 FROM ttrss_tags WHERE tag_name = ? AND owner_uid = ? AND post_int_id = ?
+			)");
+		$sth->execute([$tag, $owner_uid, $int_id, $tag, $owner_uid, $int_id]);
+
+		// Tag-Cache aktualisieren
+		$sth = $this->pdo->prepare("SELECT tag_name FROM ttrss_tags
+			WHERE post_int_id = ? AND owner_uid = ? ORDER BY tag_name");
+		$sth->execute([$int_id, $owner_uid]);
+		$all_tags = [];
+		while ($r = $sth->fetch()) {
+			$all_tags[] = $r['tag_name'];
+		}
+
+		$sth = $this->pdo->prepare("UPDATE ttrss_user_entries SET tag_cache = ?
+			WHERE int_id = ? AND owner_uid = ?");
+		$sth->execute([implode(',', $all_tags), $int_id, $owner_uid]);
+
+		print json_encode(['status' => 'ok', 'tag' => $tag]);
 	}
 
 	function api_version() {

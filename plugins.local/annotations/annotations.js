@@ -19,6 +19,9 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 			init: function () {
 				// Text-Selektion in Annotation-Wrappern
 				document.addEventListener('mouseup', function (e) {
+					// Klick innerhalb Toolbar/Popup → ignorieren
+					if (e.target.closest('.ann-context-toolbar') || e.target.closest('.ann-popup')) return;
+
 					// Klick auf bestehende Annotation → Bearbeiten
 					var mark = e.target.closest('mark.ann-highlight');
 					if (mark) {
@@ -35,7 +38,13 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 					var sel = window.getSelection();
 					if (!sel || sel.isCollapsed || !sel.toString().trim()) return;
 
-					Plugins.Annotations.showPopup(sel, wrapper);
+					// Reader-Ansicht (content-insert) → Kontext-Toolbar zeigen
+					var isReader = !!wrapper.closest('#content-insert');
+					if (isReader) {
+						Plugins.Annotations.showContextToolbar(sel, wrapper);
+					} else {
+						Plugins.Annotations.showPopup(sel, wrapper);
+					}
 				});
 
 				Plugins.Annotations._setupObserver();
@@ -348,6 +357,249 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				popup.appendChild(noteInput);
 				popup.appendChild(btnRow);
 				document.body.appendChild(popup);
+
+				setTimeout(function () {
+					document.addEventListener('mousedown', function handler(e) {
+						if (!popup.contains(e.target)) {
+							Plugins.Annotations.removePopup();
+							document.removeEventListener('mousedown', handler, true);
+						}
+					}, true);
+				}, 200);
+			},
+
+			/**
+			 * Schwebendes Kontext-Toolbar über der Textauswahl (nur Reader-Ansicht).
+			 */
+			showContextToolbar: function (sel, wrapper) {
+				Plugins.Annotations.removeContextToolbar();
+				Plugins.Annotations.removePopup();
+
+				var range = sel.getRangeAt(0);
+				var rect = range.getBoundingClientRect();
+				var selectedText = sel.toString().trim();
+				if (!selectedText) return;
+
+				var articleId = wrapper.getAttribute('data-article-id');
+
+				// Kontext für spätere Zuordnung
+				var beforeText = '';
+				try {
+					var startNode = range.startContainer;
+					beforeText = startNode.textContent.substring(
+						Math.max(0, range.startOffset - 20), range.startOffset);
+				} catch (e) { /* ignorieren */ }
+
+				var toolbar = document.createElement('div');
+				toolbar.className = 'ann-context-toolbar';
+
+				// Position über der Auswahl zentrieren
+				var toolbarWidth = 168;
+				var left = rect.left + (rect.width / 2) - (toolbarWidth / 2);
+				left = Math.max(8, Math.min(left, window.innerWidth - toolbarWidth - 8));
+
+				toolbar.style.position = 'fixed';
+				toolbar.style.left = left + 'px';
+				toolbar.style.top = (rect.top - 48) + 'px';
+				toolbar.style.zIndex = '10001';
+
+				// Falls Toolbar über dem Viewport-Rand → unter die Auswahl
+				if (rect.top - 48 < 4) {
+					toolbar.style.top = (rect.bottom + 8) + 'px';
+					toolbar.classList.add('ann-toolbar-below');
+				}
+
+				// SVG-Icons als DOM-Elemente erstellen
+				function createHighlightIcon() {
+					var ns = 'http://www.w3.org/2000/svg';
+					var svg = document.createElementNS(ns, 'svg');
+					svg.setAttribute('viewBox', '0 0 24 24');
+					svg.setAttribute('width', '18');
+					svg.setAttribute('height', '18');
+					svg.setAttribute('fill', 'currentColor');
+					var path = document.createElementNS(ns, 'path');
+					path.setAttribute('d', 'M11 7h6l-7 10v-6H4l7-10v6z');
+					svg.appendChild(path);
+					return svg;
+				}
+
+				function createNoteIcon() {
+					var ns = 'http://www.w3.org/2000/svg';
+					var svg = document.createElementNS(ns, 'svg');
+					svg.setAttribute('viewBox', '0 0 24 24');
+					svg.setAttribute('width', '18');
+					svg.setAttribute('height', '18');
+					svg.setAttribute('fill', 'currentColor');
+					var path = document.createElementNS(ns, 'path');
+					path.setAttribute('d', 'M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z');
+					svg.appendChild(path);
+					return svg;
+				}
+
+				function createTagIcon() {
+					var ns = 'http://www.w3.org/2000/svg';
+					var svg = document.createElementNS(ns, 'svg');
+					svg.setAttribute('viewBox', '0 0 24 24');
+					svg.setAttribute('width', '18');
+					svg.setAttribute('height', '18');
+					svg.setAttribute('fill', 'currentColor');
+					var path = document.createElementNS(ns, 'path');
+					path.setAttribute('d', 'M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z');
+					svg.appendChild(path);
+					return svg;
+				}
+
+				function createMoreIcon() {
+					var ns = 'http://www.w3.org/2000/svg';
+					var svg = document.createElementNS(ns, 'svg');
+					svg.setAttribute('viewBox', '0 0 24 24');
+					svg.setAttribute('width', '18');
+					svg.setAttribute('height', '18');
+					svg.setAttribute('fill', 'currentColor');
+					var c1 = document.createElementNS(ns, 'circle');
+					c1.setAttribute('cx', '6'); c1.setAttribute('cy', '12'); c1.setAttribute('r', '2');
+					var c2 = document.createElementNS(ns, 'circle');
+					c2.setAttribute('cx', '12'); c2.setAttribute('cy', '12'); c2.setAttribute('r', '2');
+					var c3 = document.createElementNS(ns, 'circle');
+					c3.setAttribute('cx', '18'); c3.setAttribute('cy', '12'); c3.setAttribute('r', '2');
+					svg.appendChild(c1);
+					svg.appendChild(c2);
+					svg.appendChild(c3);
+					return svg;
+				}
+
+				// 1. Highlight-Button
+				var highlightBtn = document.createElement('button');
+				highlightBtn.className = 'ann-toolbar-btn';
+				highlightBtn.title = __('Hervorheben');
+				highlightBtn.appendChild(createHighlightIcon());
+				highlightBtn.addEventListener('click', function () {
+					var selectorPath = JSON.stringify({before: beforeText});
+					Plugins.Annotations.save(articleId, selectedText, '', '#fff3cd',
+						range.startOffset, range.endOffset, selectorPath);
+					Plugins.Annotations.removeContextToolbar();
+					window.getSelection().removeAllRanges();
+				});
+
+				// 2. Notiz-Button
+				var noteBtn = document.createElement('button');
+				noteBtn.className = 'ann-toolbar-btn';
+				noteBtn.title = __('Notiz hinzufügen');
+				noteBtn.appendChild(createNoteIcon());
+				noteBtn.addEventListener('click', function () {
+					Plugins.Annotations.removeContextToolbar();
+					Plugins.Annotations.showPopup(sel, wrapper);
+				});
+
+				// 3. Tag-Button
+				var tagBtn = document.createElement('button');
+				tagBtn.className = 'ann-toolbar-btn';
+				tagBtn.title = __('Tag hinzufügen');
+				tagBtn.appendChild(createTagIcon());
+				tagBtn.addEventListener('click', function () {
+					Plugins.Annotations.removeContextToolbar();
+					Plugins.Annotations._showTagInput(sel, wrapper, articleId);
+				});
+
+				// 4. Mehr-Button (Platzhalter)
+				var moreBtn = document.createElement('button');
+				moreBtn.className = 'ann-toolbar-btn ann-toolbar-btn-more';
+				moreBtn.title = __('Weitere Optionen');
+				moreBtn.appendChild(createMoreIcon());
+
+				toolbar.appendChild(highlightBtn);
+				toolbar.appendChild(noteBtn);
+				toolbar.appendChild(tagBtn);
+				toolbar.appendChild(moreBtn);
+				document.body.appendChild(toolbar);
+
+				// Schließen bei Klick außerhalb
+				setTimeout(function () {
+					document.addEventListener('mousedown', function handler(e) {
+						if (!e.target.closest('.ann-context-toolbar') && !e.target.closest('.ann-popup')) {
+							Plugins.Annotations.removeContextToolbar();
+							document.removeEventListener('mousedown', handler, true);
+						}
+					}, true);
+				}, 100);
+			},
+
+			removeContextToolbar: function () {
+				document.querySelectorAll('.ann-context-toolbar').forEach(function (el) {
+					el.remove();
+				});
+			},
+
+			/**
+			 * Tag-Eingabe: öffnet ein kleines Inline-Feld über der Auswahl.
+			 */
+			_showTagInput: function (sel, wrapper, articleId) {
+				Plugins.Annotations.removePopup();
+
+				var range = sel.getRangeAt(0);
+				var rect = range.getBoundingClientRect();
+
+				var popup = document.createElement('div');
+				popup.className = 'ann-popup ann-tag-popup';
+				popup.style.position = 'fixed';
+				popup.style.left = Math.min(rect.left, window.innerWidth - 280) + 'px';
+				popup.style.top = (rect.top - 70) + 'px';
+				popup.style.zIndex = '10001';
+
+				if (rect.top - 70 < 4) {
+					popup.style.top = (rect.bottom + 8) + 'px';
+				}
+
+				var label = document.createElement('div');
+				label.className = 'ann-tag-label';
+				label.textContent = __('Tag hinzufügen');
+				popup.appendChild(label);
+
+				var inputRow = document.createElement('div');
+				inputRow.className = 'ann-tag-input-row';
+
+				var input = document.createElement('input');
+				input.type = 'text';
+				input.className = 'ann-tag-input';
+				input.placeholder = __('Tag eingeben...');
+				input.addEventListener('keydown', function (e) {
+					if (e.key === 'Enter' && input.value.trim()) {
+						doAddTag();
+					} else if (e.key === 'Escape') {
+						Plugins.Annotations.removePopup();
+					}
+				});
+
+				var addBtn = document.createElement('button');
+				addBtn.className = 'ann-save-btn';
+				addBtn.textContent = __('Hinzufügen');
+				addBtn.addEventListener('click', function () {
+					if (input.value.trim()) doAddTag();
+				});
+
+				inputRow.appendChild(input);
+				inputRow.appendChild(addBtn);
+				popup.appendChild(inputRow);
+				document.body.appendChild(popup);
+
+				setTimeout(function () { input.focus(); }, 50);
+
+				function doAddTag() {
+					var tag = input.value.trim().toLowerCase();
+					if (!tag) return;
+
+					xhr.json("backend.php", App.getPhArgs("annotations", "add_article_tag", {
+						id: articleId,
+						tag: tag
+					}), function (reply) {
+						if (reply && reply.status === 'ok') {
+							Notify.info(__('Tag hinzugefügt: ') + reply.tag);
+						}
+					});
+
+					Plugins.Annotations.removePopup();
+					window.getSelection().removeAllRanges();
+				}
 
 				setTimeout(function () {
 					document.addEventListener('mousedown', function handler(e) {
