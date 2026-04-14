@@ -14,6 +14,8 @@ services:
       - POSTGRES_USER=${TTRSS_DB_USER}
       - POSTGRES_PASSWORD=${TTRSS_DB_PASS}
       - POSTGRES_DB=${TTRSS_DB_NAME}
+    volumes:
+      - db-data:/var/lib/postgresql/data
 
   app:
     image: ghcr.io/tt-rss/tt-rss:latest
@@ -82,3 +84,6 @@ services:
     ports:
       - "5050:5050"
     restart: unless-stopped
+
+volumes:
+  db-data:

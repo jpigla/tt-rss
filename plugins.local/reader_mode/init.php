@@ -51,8 +51,8 @@ class Reader_Mode extends Plugin {
 
 		$sth = $this->pdo->prepare("
 			SELECT e.id, e.title, e.content, e.cached_content, e.link, e.author,
-				e.updated, e.lang, e.date_entered AS entry_date,
-				ue.date_entered, ue.marked, ue.unread, ue.feed_id,
+				e.updated, e.lang, e.date_entered,
+				ue.marked, ue.unread, ue.feed_id,
 				f.title AS feed_title, f.id AS feed_id, f.favicon_avg_color
 			FROM ttrss_entries e
 			JOIN ttrss_user_entries ue ON e.id = ue.ref_id
@@ -135,39 +135,26 @@ class Reader_Mode extends Plugin {
 			return;
 		}
 
-		// Aktuelles Datum des Artikels holen
-		$sth = $this->pdo->prepare("SELECT ue.date_entered
-			FROM ttrss_user_entries ue
-			WHERE ue.ref_id = ? AND ue.owner_uid = ?");
-		$sth->execute([$id, $_SESSION['uid']]);
-		$current = $sth->fetch();
-
 		$prev_id = null;
 		$next_id = null;
 
-		if ($current) {
-			$date = $current['date_entered'];
+		// Nächster (neuere ref_id im selben Feed)
+		$sth = $this->pdo->prepare("SELECT ue.ref_id
+			FROM ttrss_user_entries ue
+			WHERE ue.feed_id = ? AND ue.owner_uid = ? AND ue.ref_id > ?
+			ORDER BY ue.ref_id ASC LIMIT 1");
+		$sth->execute([$feed_id, $_SESSION['uid'], $id]);
+		$row = $sth->fetch();
+		if ($row) $next_id = (int)$row['ref_id'];
 
-			// Nächster (neuer)
-			$sth = $this->pdo->prepare("SELECT ue.ref_id
-				FROM ttrss_user_entries ue
-				WHERE ue.feed_id = ? AND ue.owner_uid = ?
-					AND (ue.date_entered > ? OR (ue.date_entered = ? AND ue.ref_id > ?))
-				ORDER BY ue.date_entered ASC, ue.ref_id ASC LIMIT 1");
-			$sth->execute([$feed_id, $_SESSION['uid'], $date, $date, $id]);
-			$row = $sth->fetch();
-			if ($row) $next_id = (int)$row['ref_id'];
-
-			// Vorheriger (älter)
-			$sth = $this->pdo->prepare("SELECT ue.ref_id
-				FROM ttrss_user_entries ue
-				WHERE ue.feed_id = ? AND ue.owner_uid = ?
-					AND (ue.date_entered < ? OR (ue.date_entered = ? AND ue.ref_id < ?))
-				ORDER BY ue.date_entered DESC, ue.ref_id DESC LIMIT 1");
-			$sth->execute([$feed_id, $_SESSION['uid'], $date, $date, $id]);
-			$row = $sth->fetch();
-			if ($row) $prev_id = (int)$row['ref_id'];
-		}
+		// Vorheriger (ältere ref_id im selben Feed)
+		$sth = $this->pdo->prepare("SELECT ue.ref_id
+			FROM ttrss_user_entries ue
+			WHERE ue.feed_id = ? AND ue.owner_uid = ? AND ue.ref_id < ?
+			ORDER BY ue.ref_id DESC LIMIT 1");
+		$sth->execute([$feed_id, $_SESSION['uid'], $id]);
+		$row = $sth->fetch();
+		if ($row) $prev_id = (int)$row['ref_id'];
 
 		print json_encode(['prev_id' => $prev_id, 'next_id' => $next_id]);
 	}

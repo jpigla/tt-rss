@@ -1,5 +1,6 @@
 <?php
 	define('TTRSS_ROOT', dirname(dirname(__DIR__)));
+	chdir(TTRSS_ROOT);
 	require_once TTRSS_ROOT . '/include/autoload.php';
 	require_once TTRSS_ROOT . '/include/sessions.php';
 
@@ -25,8 +26,8 @@
 	// Artikel laden + Berechtigung prüfen
 	$sth = $pdo->prepare("
 		SELECT e.title, e.content, e.cached_content, e.link, e.author,
-			e.updated, e.lang, e.date_entered AS entry_date,
-			ue.date_entered, ue.marked, ue.unread, ue.feed_id,
+			e.updated, e.lang, e.date_entered,
+			ue.marked, ue.unread, ue.feed_id,
 			f.title AS feed_title, f.id AS feed_id, f.favicon_avg_color
 		FROM ttrss_entries e
 		JOIN ttrss_user_entries ue ON e.id = ue.ref_id
@@ -48,8 +49,15 @@
 
 	// Volltext via Hook versuchen wenn kein cached_content
 	if (empty($article['cached_content'])) {
-		$fulltext = PluginHost::getInstance()->run_hooks_callback2(
+		$fulltext = '';
+		PluginHost::getInstance()->run_hooks_callback(
 			PluginHost::HOOK_GET_FULL_TEXT,
+			function ($result) use (&$fulltext) {
+				if ($result) {
+					$fulltext = $result;
+					return true; // Abbrechen nach erstem Ergebnis
+				}
+			},
 			$article['link']
 		);
 		if ($fulltext) {
