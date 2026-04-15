@@ -426,6 +426,105 @@ Nach dem Deployment einmal durchgehen:
 
 ---
 
+## 11. MCP-Server (Model Context Protocol)
+
+Der MCP-Server ermöglicht KI-Clients (Claude, VS Code, etc.) Zugriff auf deine RSS-Daten.
+
+### 11.1 Konfiguration
+
+In `.env` setzen:
+
+```bash
+# API-Key für MCP-Client-Authentifizierung
+MCP_API_KEY=$(openssl rand -hex 32)
+
+# TT-RSS-Benutzer für die interne API-Verbindung
+MCP_TTRSS_USER=dein-ttrss-user
+MCP_TTRSS_PASS=dein-ttrss-passwort
+
+# Port (Loopback, Caddy macht den Rest)
+MCP_PORT=127.0.0.1:3100
+```
+
+**Voraussetzung**: Der TT-RSS-Benutzer muss API-Zugriff aktiviert haben (Einstellungen → Einstellungen → API-Zugriff aktivieren).
+
+### 11.2 Container starten
+
+```bash
+docker compose build mcp-server
+docker compose up -d mcp-server
+
+# Logs prüfen
+docker compose logs -f mcp-server
+```
+
+### 11.3 Caddy-Konfiguration erweitern
+
+In `/etc/caddy/Caddyfile` den MCP-Endpunkt ergänzen:
+
+```caddyfile
+rss.jpigla.de {
+    # MCP-Server — MUSS vor dem allgemeinen reverse_proxy stehen
+    handle /mcp* {
+        reverse_proxy 127.0.0.1:3100
+    }
+
+    # Bestehendes TT-RSS
+    reverse_proxy 127.0.0.1:8280
+
+    # ... bestehende Log- und Header-Config
+}
+```
+
+```bash
+sudo systemctl reload caddy
+```
+
+### 11.4 Verbindung testen
+
+```bash
+# Health-Check
+curl https://rss.jpigla.de/health
+
+# MCP-Initialisierung (mit API-Key)
+curl -X POST https://rss.jpigla.de/mcp \
+  -H "Authorization: Bearer <DEIN-MCP-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
+```
+
+### 11.5 Claude Code anbinden
+
+```bash
+claude mcp add --transport http ttrss-rss https://rss.jpigla.de/mcp \
+  --header "Authorization: Bearer <DEIN-MCP-API-KEY>"
+```
+
+### 11.6 Verfügbare MCP-Funktionen
+
+**Tools** (Aktionen):
+- `get_feeds` — Feeds auflisten
+- `get_headlines` — Artikel-Überschriften abrufen
+- `get_article` — Vollständigen Artikel lesen
+- `search_articles` — Volltextsuche
+- `mark_article_read` — Gelesen/Ungelesen markieren
+- `star_article` — Favorit setzen
+- `subscribe_feed` / `unsubscribe_feed` — Feeds verwalten
+- `catchup_feed` — Feed als gelesen markieren
+- `get_labels` / `set_article_label` — Labels verwalten
+
+**Resources** (Kontext):
+- `ttrss://feeds` — Alle Feeds mit Unread-Zählern
+- `ttrss://categories` — Kategorien
+- `ttrss://unread-summary` — Unread-Übersicht
+
+**Prompts** (Templates):
+- `daily-briefing` — Tägliche Nachrichtenzusammenfassung
+- `topic-search` — Themensuche mit Analyse
+- `feed-digest` — Feed-spezifische Zusammenfassung
+
+---
+
 ## Architektur-Übersicht
 
 ```
@@ -439,22 +538,24 @@ Internet
 └──────────────────────────┘
    │
    ▼ (Port 443)
-┌──────────────────────────┐
-│  Caddy (TLS-Terminierung)│  ← Let's Encrypt automatisch
-│  :443 → 127.0.0.1:8280  │
-└──────────────────────────┘
-   │
-   ▼ (Port 8280, nur lokal)
-┌──────────────────────────────────────────────┐
-│  Docker Compose                              │
-│  ┌────────────┐  ┌─────┐  ┌─────────┐       │
-│  │ web-nginx   │→│ app │→│   db    │       │
-│  │ :80 (intern)│  │ PHP │  │ Postgres│       │
-│  └────────────┘  └──┬──┘  └─────────┘       │
-│                     │                         │
-│              ┌──────┴──────┐                  │
-│              │  updater    │  ┌──────────┐   │
-│              │ (Feed-Sync) │  │ edge-tts │   │
-│              └─────────────┘  └──────────┘   │
-└──────────────────────────────────────────────┘
+┌───────────────────────────────────┐
+│  Caddy (TLS-Terminierung)        │  ← Let's Encrypt automatisch
+│  /tt-rss/* → 127.0.0.1:8280     │
+│  /mcp*     → 127.0.0.1:3100     │
+└───────────────────────────────────┘
+   │                    │
+   ▼ (8280, lokal)      ▼ (3100, lokal)
+┌──────────────────────────────────────────────────┐
+│  Docker Compose                                  │
+│  ┌────────────┐  ┌─────┐  ┌─────────┐           │
+│  │ web-nginx   │→│ app │→│   db    │           │
+│  │ :80 (intern)│  │ PHP │  │ Postgres│           │
+│  └──────┬─────┘  └──┬──┘  └─────────┘           │
+│         │           │                             │
+│  ┌──────┴──────┐ ┌──┴─────────┐                  │
+│  │ mcp-server  │ │  updater   │  ┌──────────┐   │
+│  │ Node.js     │ │ (Feed-Sync)│  │ edge-tts │   │
+│  │ :3100       │ └────────────┘  └──────────┘   │
+│  └─────────────┘                                  │
+└──────────────────────────────────────────────────┘
 ```

@@ -160,7 +160,7 @@
 		window.__readerMeta = <?= $meta ?>;
 		window.__readerAnnotations = <?= $annotations_json ?>;
 		window.__readerSettings = <?= $settings_json ?>;
-		window.__csrfToken = "<?= $csrf_token ?>";
+		window.__csrfToken = <?= json_encode($csrf_token, JSON_HEX_TAG | JSON_HEX_AMP) ?>;
 	</script>
 
 	<!-- Toolbar -->
@@ -261,5 +261,17 @@
 	</div>
 
 	<script src="reader_page.js"></script>
+
+	<?php
+	// Plugin-JS für Reader-Kontext einbetten (get_reader_js()-Hook)
+	foreach (PluginHost::getInstance()->get_plugins() as $plugin) {
+		if (method_exists($plugin, 'get_reader_js')) {
+			$reader_js = $plugin->get_reader_js();
+			if ($reader_js) {
+				echo '<script>' . $reader_js . '</script>' . "\n";
+			}
+		}
+	}
+	?>
 </body>
 </html>

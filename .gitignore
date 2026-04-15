@@ -25,3 +25,6 @@ Thumbs.db
 *.sql.gz
 *.sql.bz2
 .DS_Store
+/mcp-server/node_modules
+/mcp-server/dist
+/mcp-server/package-lock.json

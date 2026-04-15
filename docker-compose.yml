@@ -93,6 +93,37 @@ services:
     depends_on:
       - app
 
+  mcp-server:
+    build:
+      context: ./mcp-server
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=16M
+    environment:
+      - TTRSS_API_URL=http://web-nginx/tt-rss/api/
+      - MCP_TTRSS_USER=${MCP_TTRSS_USER}
+      - MCP_TTRSS_PASS=${MCP_TTRSS_PASS}
+      - MCP_API_KEY=${MCP_API_KEY}
+      - MCP_ALLOWED_ORIGIN=${MCP_ALLOWED_ORIGIN:-}
+      - MCP_PORT=3100
+    ports:
+      - "${MCP_PORT:-127.0.0.1:3100}:3100"
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3100/health').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    depends_on:
+      web-nginx:
+        condition: service_started
+
   edge-tts:
     build:
       context: .docker/edge-tts
