@@ -19,14 +19,14 @@ class Parser_Rules extends Plugin {
 	/** @var PluginHost $host */
 	private $host;
 
-	function about(): array {
+	function about() {
 		return [1.0,
 			"Domain-spezifische Extraktionsregeln aus Leser-Selektion lernen",
 			"tt-ss",
 			false];
 	}
 
-	function init($host): void {
+	function init($host) {
 		$this->host = $host;
 
 		$host->add_hook($host::HOOK_GET_FULL_TEXT, $this, 25);
@@ -40,18 +40,18 @@ class Parser_Rules extends Plugin {
 	/**
 	 * Prefs-Tab-JS: AMD-Modul für Hauptanwendung (index.php / prefs.php).
 	 */
-	function get_js(): string {
+	function get_js() {
 		return file_get_contents(__DIR__ . '/parser_rules_prefs.js');
 	}
 
 	/**
 	 * Reader-JS: IIFE ohne Dojo-Abhängigkeiten, eingebettet von reader.php.
 	 */
-	function get_reader_js(): string {
+	function get_reader_js() {
 		return file_get_contents(__DIR__ . '/parser_rules.js');
 	}
 
-	function get_css(): string {
+	function get_css() {
 		return file_get_contents(__DIR__ . '/parser_rules.css');
 	}
 
@@ -60,7 +60,7 @@ class Parser_Rules extends Plugin {
 	 * @param string $url
 	 * @return string|false
 	 */
-	function hook_get_full_text(string $url) {
+	function hook_get_full_text($url) {
 		$domain = $this->normalize_domain($url);
 		if (!$domain) return false;
 
@@ -224,7 +224,7 @@ class Parser_Rules extends Plugin {
 	 * Schreibende Methoden (learn_rule, toggle_rule, delete_rule, etc.)
 	 * erfordern weiterhin einen gültigen CSRF-Token.
 	 */
-	function csrf_ignore($method): bool {
+	function csrf_ignore($method) {
 		return in_array($method, ['has_rules', 'get_rules'], true);
 	}
 
@@ -726,7 +726,7 @@ MSG;
 
 	// ── Prefs-Tab ──────────────────────────────────
 
-	function hook_prefs_tab(string $args): void {
+	function hook_prefs_tab($args) {
 		if ($args != "prefFeeds") return;
 
 		?>
@@ -796,7 +796,7 @@ MSG;
 		return $domain;
 	}
 
-	function api_version(): int {
+	function api_version() {
 		return 2;
 	}
 }
