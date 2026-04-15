@@ -74,11 +74,18 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 		var touchStartTime = 0;
 		var swiping = false;
 
+		// iOS Edge-Zone: 44px für zuverlässiges Erkennen (Apple HIG)
+		var SWIPE_EDGE_ZONE = 44;
+
 		document.addEventListener('touchstart', function (e) {
 			touchStartX = e.touches[0].clientX;
 			touchStartY = e.touches[0].clientY;
 			touchStartTime = Date.now();
 			swiping = true;
+		}, { passive: true });
+
+		document.addEventListener('touchmove', function () {
+			// Kein Abbruch — passive Listener, nur swiping-Flag relevant
 		}, { passive: true });
 
 		document.addEventListener('touchend', function (e) {
@@ -89,12 +96,15 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 			var dy = e.changedTouches[0].clientY - touchStartY;
 			var dt = Date.now() - touchStartTime;
 
-			// Mindest-Swipe: 60px horizontal, weniger als 100px vertikal, unter 400ms
-			if (Math.abs(dx) < 60 || Math.abs(dy) > 100 || dt > 400) return;
+			// Mindest-Swipe: 60px horizontal, weniger als 120px vertikal, unter 500ms
+			if (Math.abs(dx) < 60 || Math.abs(dy) > 120 || dt > 500) return;
+
+			// Verhältnis prüfen: vorwiegend horizontal
+			if (Math.abs(dy) / Math.abs(dx) > 0.75) return;
 
 			var mobile = window.matchMedia('(max-width: 768px)').matches;
 
-			if (dx > 0 && touchStartX < 30) {
+			if (dx > 0 && touchStartX < SWIPE_EDGE_ZONE) {
 				// Swipe rechts vom linken Rand → Sidebar öffnen
 				if (mobile && feedsHolder && !feedsHolder.classList.contains('mobile-visible')) {
 					toggleSidebar();

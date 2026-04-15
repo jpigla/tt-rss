@@ -146,12 +146,16 @@ JS;
 		$content = Sanitizer::sanitize($article['content'], false, $owner_uid);
 
 		header("Content-Type: text/html; charset=utf-8");
+		header("X-Content-Type-Options: nosniff");
+		header("X-Frame-Options: DENY");
+		header("Referrer-Policy: no-referrer");
 
 		?>
 <!DOCTYPE html>
 <html>
 <head>
 	<meta charset="UTF-8">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src https: data:">
 	<title><?= $title ?></title>
 	<style>
 		* {

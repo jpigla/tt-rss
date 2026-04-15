@@ -1,5 +1,28 @@
 /* ── TT-SS Mobile PWA Optimierung ──────────────────── */
 
+/* iOS: Tap-Highlight deaktivieren (kein graues Aufleuchten beim Tippen) */
+* {
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* iOS: Schriftgröße-Skalierung verhindern beim Drehen */
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+/* Overscroll-Bounce nur im Body, nicht in Subcontainern */
+body.ttrss_main {
+	overscroll-behavior: none;
+}
+
+/* Scrollbare Bereiche: Bounce erlaubt, aber kein Weiterleiten */
+#feeds-holder,
+#headlines-frame,
+#content-insert {
+	overscroll-behavior: contain;
+}
+
 /* Safe Area für iOS Notch/Dynamic Island */
 @supports (padding: env(safe-area-inset-top)) {
 	body.ttrss_main {
@@ -81,8 +104,8 @@
 		order: -1;
 		align-items: center;
 		justify-content: center;
-		width: 36px;
-		height: 36px;
+		width: 44px;
+		height: 44px;
 		border: none;
 		background: none;
 		color: var(--default-fg, #e0e0e0);
@@ -90,6 +113,7 @@
 		font-size: 24px;
 		padding: 0;
 		flex-shrink: 0;
+		touch-action: manipulation;
 	}
 
 	/* Selects kleiner */
@@ -109,11 +133,12 @@
 	.hl .left i.material-icons {
 		font-size: 22px;
 		padding: 8px;
-		min-width: 40px;
-		min-height: 40px;
+		min-width: 44px;
+		min-height: 44px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		touch-action: manipulation;
 	}
 
 	/* Content-Insert: Volle Breite auf Mobil */
@@ -178,13 +203,22 @@
 /* ── Touch-Optimierung ───────────────────────────────── */
 @media (hover: none) and (pointer: coarse) {
 
-	/* Größere Touch-Targets */
+	/* Größere Touch-Targets (Apple HIG: min 44×44pt) */
 	.cdm .footer .left i.material-icons,
 	#feedTree .dijitTreeRow,
 	.dijitMenuItem {
 		min-height: 44px;
 		display: flex;
 		align-items: center;
+	}
+
+	/* Doppel-Tap-Zoom auf Buttons unterbinden */
+	button,
+	.dijitButton,
+	.dijitMenuItem,
+	.cdm .footer .left i.material-icons,
+	.hl .left i.material-icons {
+		touch-action: manipulation;
 	}
 
 	/* Scrollbar-Styling für Touch */

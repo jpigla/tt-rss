@@ -21,3 +21,7 @@ Thumbs.db
 /.phpstan-tmp
 /.rector-tmp
 /.tools/
+/backup.sql
+*.sql.gz
+*.sql.bz2
+.DS_Store

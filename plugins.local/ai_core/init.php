@@ -289,9 +289,19 @@ class Ai_Core extends Plugin {
 	}
 
 	function save(): void {
+		$endpoint = clean($_POST['endpoint'] ?? 'http://localhost:11434');
+
+		// Endpoint-URL validieren: nur http(s) erlauben
+		$parsed = parse_url($endpoint);
+		$scheme = $parsed['scheme'] ?? '';
+		if (!empty($endpoint) && !in_array($scheme, ['http', 'https'])) {
+			echo __("Ungültiges URL-Schema. Nur http und https sind erlaubt.");
+			return;
+		}
+
 		$this->host->set($this, 'provider', clean($_POST['provider'] ?? self::PROVIDER_OLLAMA));
 		$this->host->set($this, 'api_key', clean($_POST['api_key'] ?? ''));
-		$this->host->set($this, 'endpoint', clean($_POST['endpoint'] ?? 'http://localhost:11434'));
+		$this->host->set($this, 'endpoint', $endpoint);
 		$this->host->set($this, 'model', clean($_POST['model'] ?? 'llama3.2'));
 
 		echo __("KI-Konfiguration gespeichert.");

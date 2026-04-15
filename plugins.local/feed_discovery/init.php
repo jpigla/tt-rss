@@ -160,15 +160,17 @@ class Feed_Discovery extends Plugin {
 		$period_days = (int)($this->host->get($this, "trending_period", 7));
 
 		// PostgreSQL tsvector-basierte Keyword-Extraktion
-		// ts_stat() benötigt ein String-Literal — PDO-Platzhalter funktionieren nicht in $$-Blöcken
-		$uid_safe = (int)$uid;
-		$period_safe = (int)$period_days;
-		$sql = "SELECT word, ndoc AS cnt FROM ts_stat('
+		// ts_stat() benötigt ein String-Literal — PDO-Platzhalter funktionieren
+		// nicht in $$-Blöcken. Werte werden strikt als int gecastet und validiert.
+		$uid_safe = abs(intval($uid));
+		$period_safe = max(1, min(90, intval($period_days)));
+		if ($uid_safe < 1) return;
+		$sql = "SELECT word, ndoc AS cnt FROM ts_stat($$
 			SELECT tsvector_combined FROM ttrss_entries e
 			JOIN ttrss_user_entries ue ON ue.ref_id = e.id
 			WHERE ue.owner_uid = " . $uid_safe . "
-			AND e.date_entered > NOW() - INTERVAL ''" . $period_safe . " days''
-		') ORDER BY ndoc DESC LIMIT 100";
+			AND e.date_entered > NOW() - INTERVAL '" . $period_safe . " days'
+		$$) ORDER BY ndoc DESC LIMIT 100";
 
 		try {
 			$sth = $this->pdo->query($sql);
@@ -193,15 +195,15 @@ class Feed_Discovery extends Plugin {
 
 		// Vorherige Periode
 		try {
-			$prev_start = (int)($period_days * 2);
-			$prev_end = (int)$period_days;
-			$sql_prev = "SELECT word, ndoc AS cnt FROM ts_stat('
+			$prev_start = max(1, min(180, intval($period_days * 2)));
+			$prev_end = max(1, min(90, intval($period_days)));
+			$sql_prev = "SELECT word, ndoc AS cnt FROM ts_stat($$
 				SELECT tsvector_combined FROM ttrss_entries e
 				JOIN ttrss_user_entries ue ON ue.ref_id = e.id
 				WHERE ue.owner_uid = " . $uid_safe . "
-				AND e.date_entered BETWEEN NOW() - INTERVAL ''" . $prev_start . " days''
-					AND NOW() - INTERVAL ''" . $prev_end . " days''
-			') ORDER BY ndoc DESC LIMIT 100";
+				AND e.date_entered BETWEEN NOW() - INTERVAL '" . $prev_start . " days'
+					AND NOW() - INTERVAL '" . $prev_end . " days'
+			$$) ORDER BY ndoc DESC LIMIT 100";
 			$sth = $this->pdo->query($sql_prev);
 
 			while ($row = $sth->fetch()) {
@@ -258,7 +260,8 @@ class Feed_Discovery extends Plugin {
 				AND e.date_entered > NOW() - INTERVAL '1 day' * ?
 				AND lower(e.title) LIKE ?
 				ORDER BY e.date_entered DESC LIMIT 3");
-			$sample_sth->execute([$uid, $period_days, '%' . $word . '%']);
+			$word_escaped = str_replace(['%', '_'], ['\%', '\_'], $word);
+			$sample_sth->execute([$uid, $period_days, '%' . $word_escaped . '%']);
 
 			$sample_ids = [];
 			while ($sr = $sample_sth->fetch()) {

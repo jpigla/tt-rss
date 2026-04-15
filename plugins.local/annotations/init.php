@@ -41,7 +41,9 @@ class Annotations extends Plugin {
 	}
 
 	function csrf_ignore($method): bool {
-		return in_array($method, ["export_csv", "export_all_csv", "get_article_tags", "add_article_tag", "get_all_markers"]);
+		// Nur GET-basierte Downloads und Lesezugriffe überspringen;
+		// add_article_tag ist schreibend und benötigt CSRF-Schutz
+		return in_array($method, ["export_csv", "export_all_csv"]);
 	}
 
 	function hook_render_article_cdm($article) {

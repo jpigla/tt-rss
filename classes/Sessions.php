@@ -26,6 +26,8 @@ class Sessions implements \SessionHandlerInterface {
 		ini_set('session.use_only_cookies', 'true');
 		ini_set('session.gc_maxlifetime', $this->session_expire);
 		ini_set('session.cookie_lifetime', '0');
+		ini_set('session.cookie_httponly', 'true');
+		ini_set('session.cookie_samesite', 'Lax');
 	}
 
 	/**
@@ -36,7 +38,7 @@ class Sessions implements \SessionHandlerInterface {
 		if (isset($_COOKIE[$this->session_name]) && $this->session_expire > 0) {
 			return setcookie($this->session_name,
 				$_COOKIE[$this->session_name],
-                ['expires' => time() + $this->session_expire, 'path' => ini_get('session.cookie_path'), 'domain' => ini_get('session.cookie_domain'), 'secure' => ini_get('session.cookie_secure'), 'httponly' => ini_get('session.cookie_httponly')]);
+                ['expires' => time() + $this->session_expire, 'path' => ini_get('session.cookie_path'), 'domain' => ini_get('session.cookie_domain'), 'secure' => ini_get('session.cookie_secure'), 'httponly' => true, 'samesite' => 'Lax']);
 		}
 		return false;
 	}
@@ -104,7 +106,9 @@ class Sessions implements \SessionHandlerInterface {
 	 * @return int|false the number of deleted sessions on success, or false on failure
 	 */
 	public function gc(int $max_lifetime): false|int {
-		$result = Db::pdo()->query('DELETE FROM ttrss_sessions WHERE expire < ' . time());
+		$sth = Db::pdo()->prepare('DELETE FROM ttrss_sessions WHERE expire < ?');
+		$sth->execute([time()]);
+		$result = $sth;
 		return $result === false ? false : $result->rowCount();
 	}
 

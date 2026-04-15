@@ -183,6 +183,12 @@ class Webhooks extends Plugin {
 		$webhook_url = clean($_POST["webhook_url"] ?? "");
 		$webhook_secret = clean($_POST["webhook_secret"] ?? "");
 
+		// URL-Validierung: nur https erlauben
+		if (!empty($webhook_url) && !preg_match('#^https://#i', $webhook_url)) {
+			echo __("Webhook-URL muss HTTPS verwenden.");
+			return;
+		}
+
 		$enabled_events = [];
 		if (checkbox_to_sql_bool($_POST["event_filter_triggered"] ?? "")) {
 			$enabled_events[] = "filter_triggered";

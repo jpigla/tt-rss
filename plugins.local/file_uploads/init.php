@@ -146,8 +146,8 @@ class File_Uploads extends Plugin {
 			$content = "<div class='fu-uploaded-content'>" . nl2br(htmlspecialchars($extracted_text)) . "</div>";
 
 			if ($ext === 'html' || $ext === 'htm') {
-				// HTML direkt verwenden (wird von TT-RSS sanitized)
-				$content = $extracted_text;
+				// HTML durch Sanitizer bereinigen (XSS-Schutz)
+				$content = Sanitizer::sanitize($extracted_text, false, $_SESSION['uid']);
 			}
 
 			Article::_create_published_article($title, '', $content, '', $_SESSION['uid']);

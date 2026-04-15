@@ -62,6 +62,7 @@ class Output_Feeds extends Plugin {
 		$articles = $this->fetch_articles($config, $owner_uid, $max_items);
 
 		header("Content-Type: application/rss+xml; charset=utf-8");
+		header("X-Content-Type-Options: nosniff");
 
 		$self_url = htmlspecialchars(Config::get_self_url() .
 			"/backend.php?op=pluginhandler&plugin=output_feeds&pmethod=rss&key=" . urlencode($key));
@@ -81,7 +82,7 @@ class Output_Feeds extends Plugin {
 		<link><?= htmlspecialchars($article['link'] ?? '') ?></link>
 		<guid isPermaLink="false"><?= htmlspecialchars($article['guid'] ?? $article['link'] ?? '') ?></guid>
 		<pubDate><?= date('r', strtotime($article['updated'])) ?></pubDate>
-		<description><![CDATA[<?= $article['content'] ?? '' ?>]]></description>
+		<description><![CDATA[<?= Sanitizer::sanitize($article['content'] ?? '', false, $owner_uid) ?>]]></description>
 	</item>
 <?php } ?>
 </channel>

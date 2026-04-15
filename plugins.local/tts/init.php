@@ -282,7 +282,8 @@ edge-tts:
 			CURLOPT_HTTPHEADER => $headers,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_TIMEOUT => 120,
-			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_FOLLOWLOCATION => false,
+			CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
 		]);
 
 		$audio = curl_exec($ch);

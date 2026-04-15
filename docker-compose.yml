@@ -16,6 +16,14 @@ services:
       - POSTGRES_DB=${TTRSS_DB_NAME}
     volumes:
       - db-data:/var/lib/postgresql/data
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TTRSS_DB_USER} -d ${TTRSS_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   app:
     image: ghcr.io/tt-rss/tt-rss:latest
@@ -34,8 +42,13 @@ services:
       - .env
     volumes:
       - .:/var/www/html/tt-rss
+    tmpfs:
+      - /tmp:noexec,nosuid,size=64M
+    security_opt:
+      - no-new-privileges:true
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   updater:
     image: ghcr.io/tt-rss/tt-rss:latest
@@ -52,6 +65,10 @@ services:
       - .env
     volumes:
       - .:/var/www/html/tt-rss
+    tmpfs:
+      - /tmp:noexec,nosuid,size=64M
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       - app
     command: /opt/tt-rss/updater.sh
@@ -68,6 +85,11 @@ services:
       - ${HTTP_PORT}:80
     volumes:
       - .:/var/www/html/tt-rss:ro
+    tmpfs:
+      - /tmp:noexec,nosuid,size=16M
+      - /var/cache/nginx:noexec,nosuid,size=32M
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       - app
 
@@ -81,8 +103,12 @@ services:
       - DEFAULT_LANGUAGE=de-DE
     volumes:
       - ./certs:/custom-certs:ro
-    ports:
-      - "5050:5050"
+    # Port nur intern erreichbar — kein externes Binding nötig.
+    # Zugriff über Docker-Netzwerk: http://edge-tts:5050
+    expose:
+      - "5050"
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
 volumes:

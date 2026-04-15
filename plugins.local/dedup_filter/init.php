@@ -219,10 +219,10 @@ class Dedup_Filter extends Plugin {
 	}
 
 	function save(): void {
-		$this->host->set($this, "similarity", sprintf("%.2f", (float) $_POST["similarity"]));
-		$this->host->set($this, "min_title_length", (int) $_POST["min_title_length"]);
-		$this->host->set($this, "lookback_hours", (int) $_POST["lookback_hours"]);
-		$this->host->set($this, "enable_globally", checkbox_to_sql_bool($_POST["enable_globally"] ?? ""));
+		$this->host->set($this, "similarity", sprintf("%.2f", (float) clean($_POST["similarity"] ?? $this->default_similarity)));
+		$this->host->set($this, "min_title_length", (int) clean($_POST["min_title_length"] ?? $this->default_min_length));
+		$this->host->set($this, "lookback_hours", (int) clean($_POST["lookback_hours"] ?? $this->default_lookback_hours));
+		$this->host->set($this, "enable_globally", checkbox_to_sql_bool(clean($_POST["enable_globally"] ?? "")));
 		echo __("Einstellungen gespeichert.");
 	}
 

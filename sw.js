@@ -1,8 +1,9 @@
 /**
  * TT-SS Service Worker — Offline-Caching für PWA.
+ * v2 — opaque-Response-Guard, verbesserte Cross-Origin-Sicherheit.
  */
 
-var CACHE_NAME = 'ttss-v1';
+var CACHE_NAME = 'ttss-v2';
 
 // Statische Assets die sofort gecacht werden
 var PRECACHE_URLS = [
@@ -49,8 +50,11 @@ self.addEventListener('fetch', function (event) {
 	// Nur GET-Requests cachen
 	if (request.method !== 'GET') return;
 
-	// API-Calls und Backend nicht cachen
+	// Nur Same-Origin-Requests cachen (Cross-Origin blockieren)
 	var url = new URL(request.url);
+	if (url.origin !== self.location.origin) return;
+
+	// API-Calls und Backend nicht cachen
 	if (url.pathname.includes('backend.php') ||
 		url.pathname.includes('public.php') ||
 		url.pathname.includes('api/')) {
@@ -79,6 +83,9 @@ self.addEventListener('fetch', function (event) {
 			if (cachedResponse) {
 				// Im Hintergrund aktualisieren (stale-while-revalidate)
 				fetch(request).then(function (response) {
+					// Opaque Responses (Cross-Origin ohne CORS) nicht cachen —
+					// Status ist immer 0, könnten Fehler-Responses sein.
+					if (!response || response.type === 'opaque') return;
 					caches.open(CACHE_NAME).then(function (cache) {
 						cache.put(request, response);
 					});
@@ -87,8 +94,10 @@ self.addEventListener('fetch', function (event) {
 			}
 
 			return fetch(request).then(function (response) {
-				// Nur erfolgreiche Responses cachen
-				if (!response || response.status !== 200) return response;
+				// Nur erfolgreiche Same-Origin-Responses cachen
+				if (!response || response.status !== 200 || response.type === 'opaque') {
+					return response;
+				}
 
 				var clone = response.clone();
 				caches.open(CACHE_NAME).then(function (cache) {

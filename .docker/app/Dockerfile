@@ -23,6 +23,9 @@ RUN [ ! -z ${ALPINE_MIRROR} ] && \
 		done; \
 		echo $php_pkgs) && \
 	sed -i 's/\(memory_limit =\) 128M/\1 256M/' /etc/php${PHP_SUFFIX}/php.ini && \
+	sed -i 's/\(expose_php =\) On/\1 Off/' /etc/php${PHP_SUFFIX}/php.ini && \
+	sed -i 's/\(display_errors =\) On/\1 Off/' /etc/php${PHP_SUFFIX}/php.ini && \
+	sed -i 's/\(display_startup_errors =\) On/\1 Off/' /etc/php${PHP_SUFFIX}/php.ini && \
 	sed -i -e 's/^listen = 127.0.0.1:9000/listen = 9000/' \
 		-e 's/;\(clear_env\) = .*/\1 = no/i' \
 		-e 's/;\(pm.status_path = \/status\)/\1/i' \

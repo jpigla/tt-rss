@@ -29,6 +29,8 @@
 	<link rel="apple-touch-icon" href="images/favicon-180px.png">
 	<link rel="apple-touch-icon" sizes="152x152" href="images/favicon-180px.png">
 	<link rel="apple-touch-icon" sizes="180x180" href="images/favicon-180px.png">
+	<!-- iOS Startbild (Splash) für häufige iPhone-Auflösungen -->
+	<link rel="apple-touch-startup-image" href="images/favicon-512px.png">
 
 	<?php if ($_SESSION["uid"] && empty($_SESSION["safe_mode"])) {
 		$theme = Prefs::get(Prefs::USER_CSS_THEME, $_SESSION['uid'], $_SESSION['profile'] ?? null);
@@ -125,7 +127,6 @@
 		</style>
 	</noscript>
 
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<meta name="referrer" content="no-referrer"/>
 </head>
 

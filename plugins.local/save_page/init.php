@@ -101,6 +101,13 @@ JS;
 			$url = 'https://' . $url;
 		}
 
+		// SSRF-Schutz: Interne/private Netzwerke blockieren
+		$host = parse_url($url, PHP_URL_HOST);
+		if (!$host || preg_match('/^(localhost|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.|\[::1\]|\[fd|169\.254\.)/i', $host)) {
+			print json_encode(['error' => 'Interne Adressen sind nicht erlaubt.']);
+			return;
+		}
+
 		$html = UrlHelper::fetch(['url' => $url, 'timeout' => 15]);
 
 		if (!$html) {

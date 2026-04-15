@@ -57,15 +57,13 @@ class Browser_Extension extends Plugin {
 		header('Content-Type: application/json');
 
 		$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-		// Chrome-Extension und localhost für Entwicklung erlauben
-		if (preg_match('/^chrome-extension:\/\//', $origin)
+		// Chrome/Firefox-Extension und localhost für Entwicklung erlauben
+		if (preg_match('/^(chrome|moz)-extension:\/\/[a-zA-Z0-9]+/', $origin)
 			|| preg_match('/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/', $origin)) {
 			header('Access-Control-Allow-Origin: ' . $origin);
 			header('Vary: Origin');
-		} else {
-			// Fallback für direkte Aufrufe (Bookmarklet etc.)
-			header('Access-Control-Allow-Origin: *');
 		}
+		// Kein Wildcard-Fallback — unautorisierte Origins werden ohne CORS-Header abgelehnt
 		header('Access-Control-Allow-Methods: POST, OPTIONS');
 		header('Access-Control-Allow-Headers: Content-Type');
 	}
