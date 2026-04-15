@@ -224,7 +224,7 @@ class Parser_Rules extends Plugin {
 	 * Schreibende Methoden (learn_rule, toggle_rule, delete_rule, etc.)
 	 * erfordern weiterhin einen gültigen CSRF-Token.
 	 */
-	function csrf_ignore(string $method): bool {
+	function csrf_ignore($method): bool {
 		return in_array($method, ['has_rules', 'get_rules'], true);
 	}
 
