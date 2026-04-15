@@ -564,6 +564,15 @@ a:hover {
 	color: var(--reader-fg);
 }
 
+.info-meta-link {
+	color: var(--reader-accent);
+	text-decoration: none;
+}
+
+.info-meta-link:hover {
+	text-decoration: underline;
+}
+
 .info-labels {
 	display: flex;
 	flex-wrap: wrap;
@@ -683,6 +692,12 @@ a:hover {
 	font-size: 10px;
 	background: rgba(74, 158, 255, 0.15);
 	color: var(--reader-accent);
+	text-decoration: none;
+}
+
+.note-card-marker:hover {
+	background: rgba(74, 158, 255, 0.28);
+	text-decoration: none;
 }
 
 .note-card-footer {

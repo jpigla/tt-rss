@@ -535,3 +535,109 @@
 	background: var(--color-accent, #257fad);
 	color: #fff;
 }
+
+/* ── Reader Mode: Dark-Theme-Overrides ───────────── */
+
+.reader-body .ann-popup {
+	background: var(--reader-surface, #242424);
+	border-color: var(--reader-border, #333);
+	color: var(--reader-fg, #e0e0e0);
+}
+
+.reader-body .ann-popup-preview {
+	color: var(--reader-fg-muted, #999);
+	background: rgb(255 255 255 / 0.05);
+}
+
+.reader-body .ann-note-input {
+	background: var(--reader-bg, #1a1a1a);
+	border-color: var(--reader-border, #333);
+	color: var(--reader-fg, #e0e0e0);
+}
+
+.reader-body .ann-note-input:focus {
+	border-color: var(--reader-accent, #4a9eff);
+	box-shadow: 0 0 0 2px rgb(74 158 255 / 0.2);
+}
+
+.reader-body .ann-save-btn,
+.reader-body .ann-cancel-btn,
+.reader-body .ann-delete-btn {
+	border-color: var(--reader-border, #333);
+	color: var(--reader-fg, #e0e0e0);
+}
+
+.reader-body .ann-save-btn {
+	background: var(--reader-accent, #4a9eff);
+	border-color: var(--reader-accent, #4a9eff);
+	color: #fff;
+}
+
+.reader-body .ann-cancel-btn {
+	background: transparent;
+}
+
+.reader-body .ann-cancel-btn:hover {
+	background: var(--reader-surface-hover, #2e2e2e);
+}
+
+.reader-body .ann-delete-btn {
+	background: #c62828;
+	border-color: #c62828;
+	color: #fff;
+}
+
+.reader-body .ann-color-btn.ann-color-active {
+	border-color: var(--reader-accent, #4a9eff);
+	box-shadow: 0 0 0 2px rgb(74 158 255 / 0.3);
+}
+
+.reader-body .ann-markers-input {
+	background: var(--reader-bg, #1a1a1a);
+	border-color: var(--reader-border, #333);
+	color: var(--reader-fg, #e0e0e0);
+}
+
+.reader-body .ann-markers-input:focus {
+	border-color: var(--reader-accent, #4a9eff);
+	box-shadow: 0 0 0 2px rgb(74 158 255 / 0.2);
+}
+
+.reader-body .ann-markers-label {
+	color: var(--reader-fg-muted, #999);
+}
+
+.reader-body .ann-markers-dropdown {
+	background: var(--reader-surface, #242424);
+	border-color: var(--reader-border, #333);
+}
+
+.reader-body .ann-markers-dropdown-item {
+	color: var(--reader-fg, #e0e0e0);
+}
+
+.reader-body .ann-markers-dropdown-item:hover {
+	background: var(--reader-accent, #4a9eff);
+	color: #fff;
+}
+
+.reader-body .ann-tag-popup {
+	background: var(--reader-surface, #242424);
+	border-color: var(--reader-border, #333);
+	color: var(--reader-fg, #e0e0e0);
+}
+
+.reader-body .ann-tag-label {
+	color: var(--reader-fg-muted, #999);
+}
+
+.reader-body .ann-tag-input {
+	background: var(--reader-bg, #1a1a1a);
+	border-color: var(--reader-border, #333);
+	color: var(--reader-fg, #e0e0e0);
+}
+
+.reader-body .ann-tag-input:focus {
+	border-color: var(--reader-accent, #4a9eff);
+	box-shadow: 0 0 0 2px rgb(74 158 255 / 0.2);
+}

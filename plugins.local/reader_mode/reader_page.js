@@ -39,27 +39,34 @@
 
 	function formatDate(str) {
 		if (!str) return '\u2014';
-		try {
-			var d = new Date(str);
-			return d.toLocaleDateString('de-DE', {
-				day: '2-digit', month: '2-digit', year: 'numeric'
-			}) + ', ' + d.toLocaleTimeString('de-DE', {
-				hour: '2-digit', minute: '2-digit'
-			});
-		} catch (e) { return str; }
+		var d = new Date(str);
+		if (isNaN(d.getTime())) return str;
+		return d.toLocaleDateString('de-DE', {
+			day: '2-digit', month: '2-digit', year: 'numeric'
+		});
+	}
+
+	function formatDateTime(str) {
+		if (!str) return '\u2014';
+		var d = new Date(str);
+		if (isNaN(d.getTime())) return str;
+		return d.toLocaleDateString('de-DE', {
+			day: '2-digit', month: '2-digit', year: 'numeric'
+		}) + ', ' + d.toLocaleTimeString('de-DE', {
+			hour: '2-digit', minute: '2-digit'
+		});
 	}
 
 	function relativeTime(str) {
 		if (!str) return '';
-		try {
-			var d = new Date(str);
-			var diff = (Date.now() - d.getTime()) / 1000;
-			if (diff < 60) return 'gerade eben';
-			if (diff < 3600) return Math.floor(diff / 60) + ' Min';
-			if (diff < 86400) return Math.floor(diff / 3600) + ' Std';
-			if (diff < 604800) return Math.floor(diff / 86400) + ' Tage';
-			return formatDate(str);
-		} catch (e) { return str; }
+		var d = new Date(str);
+		if (isNaN(d.getTime())) return str;
+		var diff = (Date.now() - d.getTime()) / 1000;
+		if (diff < 60) return 'gerade eben';
+		if (diff < 3600) return Math.floor(diff / 60) + ' Min';
+		if (diff < 86400) return Math.floor(diff / 3600) + ' Std';
+		if (diff < 604800) return Math.floor(diff / 86400) + ' Tage';
+		return formatDate(str);
 	}
 
 	function truncate(text, len) {
@@ -179,17 +186,49 @@
 			var td1 = document.createElement('td');
 			td1.textContent = label;
 			var td2 = document.createElement('td');
-			td2.textContent = value;
+			if (typeof value === 'string') {
+				td2.textContent = value;
+			} else {
+				td2.appendChild(value);
+			}
 			tr.appendChild(td1);
 			tr.appendChild(td2);
 			tbody.appendChild(tr);
 		}
 
-		addRow('Feed', meta.feed_title);
+		// Feed → Link zurück zum TT-RSS mit Feed-Filter
+		if (meta.feed_title && meta.feed_id) {
+			var feedLink = el('a', 'info-meta-link');
+			feedLink.href = '../../index.php#f=' + encodeURIComponent(meta.feed_id);
+			feedLink.target = '_blank';
+			feedLink.textContent = meta.feed_title;
+			addRow('Feed', feedLink);
+		} else {
+			addRow('Feed', meta.feed_title);
+		}
+
 		addRow('Autor', meta.author);
-		addRow('Publiziert', formatDate(meta.published));
+
+		// Publiziert → nur Datum, klickbar (alle Artikel)
+		if (meta.published) {
+			var pubLink = el('a', 'info-meta-link');
+			pubLink.href = '../../index.php#f=-4';
+			pubLink.target = '_blank';
+			pubLink.textContent = formatDate(meta.published);
+			addRow('Publiziert', pubLink);
+		}
+
 		addRow('Gespeichert', formatDate(meta.saved));
-		addRow('Sprache', meta.lang);
+
+		// Sprache → klickbarer Link (alle Artikel, für spätere Filterung)
+		if (meta.lang) {
+			var langLink = el('a', 'info-meta-link');
+			langLink.href = '../../index.php#f=-4';
+			langLink.target = '_blank';
+			langLink.textContent = meta.lang;
+			addRow('Sprache', langLink);
+		}
+
 		addRow('Wörter', String(meta.word_count || 0));
 		addRow('Lesezeit', '~' + (meta.reading_time || 1) + ' Min');
 
@@ -274,7 +313,12 @@
 			ann.markers.split(',').forEach(function (m) {
 				m = m.trim();
 				if (!m) return;
-				markersDiv.appendChild(el('span', 'note-card-marker', m));
+				var chip = el('a', 'note-card-marker');
+				chip.href = '../../index.php#f=-4&query=' + encodeURIComponent(m);
+				chip.target = '_blank';
+				chip.textContent = m;
+				chip.addEventListener('click', function (e) { e.stopPropagation(); });
+				markersDiv.appendChild(chip);
 			});
 			inner.appendChild(markersDiv);
 		}
