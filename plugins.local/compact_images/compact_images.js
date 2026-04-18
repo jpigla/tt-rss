@@ -25,7 +25,6 @@ const CompactImages = {
 			const path = parsed.pathname;
 
 			if (path && path !== '/') {
-				// Pfad kürzen wenn zu lang
 				if (path.length > 50) {
 					display += path.substring(0, 47) + '...';
 				} else {
@@ -37,6 +36,32 @@ const CompactImages = {
 		} catch (e) {
 			return url;
 		}
+	},
+
+	/**
+	 * Extrahiert den Hostnamen aus einer URL für das Favicon.
+	 */
+	getDomain: function (url) {
+		try {
+			return new URL(url).hostname;
+		} catch (e) {
+			return '';
+		}
+	},
+
+	/**
+	 * Erstellt ein Favicon-<img>-Element für die gegebene URL.
+	 */
+	createFavicon: function (url) {
+		const domain = CompactImages.getDomain(url);
+		if (!domain) return null;
+
+		const img = document.createElement('img');
+		img.className = 'ci-favicon';
+		img.src = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(domain) + '&sz=16';
+		img.alt = '';
+		img.loading = 'lazy';
+		return img;
 	},
 
 	/**
@@ -65,8 +90,13 @@ const CompactImages = {
 		urlEl.href = url;
 		urlEl.target = '_blank';
 		urlEl.rel = 'noopener noreferrer';
-		urlEl.textContent = CompactImages.formatUrl(url);
 		urlEl.title = url;
+
+		// Favicon einfügen
+		const favicon = CompactImages.createFavicon(url);
+		if (favicon) urlEl.appendChild(favicon);
+
+		urlEl.appendChild(document.createTextNode(CompactImages.formatUrl(url)));
 
 		// Nach dem Autor einfügen (oder nach dem titleWrap)
 		const author = header.querySelector('.author');
@@ -107,8 +137,13 @@ const CompactImages = {
 		urlEl.href = url;
 		urlEl.target = '_blank';
 		urlEl.rel = 'noopener noreferrer';
-		urlEl.textContent = CompactImages.formatUrl(url);
 		urlEl.title = url;
+
+		// Favicon einfügen
+		const favicon = CompactImages.createFavicon(url);
+		if (favicon) urlEl.appendChild(favicon);
+
+		urlEl.appendChild(document.createTextNode(CompactImages.formatUrl(url)));
 
 		urlRow.appendChild(urlEl);
 
@@ -137,7 +172,7 @@ const CompactImages = {
 			if (!firstImg) return;
 
 			var src = firstImg.getAttribute('src') || '';
-			// Data-URIs und Tracking-Pixel ueberspringen
+			// Data-URIs und Tracking-Pixel überspringen
 			if (src.indexOf('data:') === 0) return;
 
 			// Prüfe ob Bild groß genug ist (wenn width-Attribut vorhanden)
@@ -200,32 +235,48 @@ const CompactImages = {
 	},
 
 	/**
-	 * Initialisierung: MutationObserver für dynamisch geladene Artikel.
+	 * Initialisierung: PluginHost-Hooks für zuverlässige Verarbeitung.
 	 */
 	init: function () {
-		// Initiale Verarbeitung
+		// Initiale Verarbeitung (für bereits geladene Artikel)
 		CompactImages.processAll();
 
-		// Beobachte DOM-Änderungen für dynamisch geladene Artikel
-		const observer = new MutationObserver(function (mutations) {
-			let shouldProcess = false;
-			for (const m of mutations) {
-				if (m.addedNodes.length > 0) {
-					shouldProcess = true;
-					break;
+		// PluginHost-Hooks für dynamisch gerenderte Artikel
+		if (typeof PluginHost !== 'undefined') {
+			// Drei-Panel-Ansicht: wird bei jedem Artikelwechsel gefeuert
+			PluginHost.register(PluginHost.HOOK_ARTICLE_RENDERED, function (domNode) {
+				const post = domNode.querySelector('.post');
+				if (post) {
+					CompactImages.enhancePostView(post);
 				}
-			}
-			if (shouldProcess) {
-				CompactImages.processAll();
-			}
-		});
+				CompactImages.compactEnclosureImages(domNode);
+			});
 
-		// Hauptcontainer beobachten
-		const container = document.getElementById('headlines-frame')
-			|| document.getElementById('content-insert')
-			|| document.body;
+			// CDM-Ansicht: wird bei jedem neuen CDM-Eintrag gefeuert
+			PluginHost.register(PluginHost.HOOK_ARTICLE_RENDERED_CDM, function (row) {
+				CompactImages.enhanceCdmRow(row);
+				CompactImages.compactEnclosureImages(row);
+			});
+		}
 
-		observer.observe(container, { childList: true, subtree: true });
+		// Fallback-Observer für Headlines-Liste (CDM Nachlade-Szenarien)
+		const headlinesFrame = document.getElementById('headlines-frame');
+		if (headlinesFrame) {
+			const observer = new MutationObserver(function (mutations) {
+				let shouldProcess = false;
+				for (const m of mutations) {
+					if (m.addedNodes.length > 0) {
+						shouldProcess = true;
+						break;
+					}
+				}
+				if (shouldProcess) {
+					CompactImages.processAll();
+				}
+			});
+
+			observer.observe(headlinesFrame, { childList: true, subtree: true });
+		}
 	}
 };
 

@@ -56,11 +56,8 @@ class Compact_Images extends Plugin {
 			font-size: 12px;
 			color: #999;
 			font-weight: normal;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			max-width: 500px;
-			display: inline-block;
+			word-break: break-all;
+			display: inline;
 			vertical-align: middle;
 			text-decoration: none;
 		}
@@ -70,12 +67,24 @@ class Compact_Images extends Plugin {
 			text-decoration: underline;
 		}
 
+		.ci-article-url .ci-favicon {
+			width: 16px;
+			height: 16px;
+			vertical-align: text-bottom;
+			margin-right: 4px;
+			display: inline-block;
+		}
+
 		.cdm .header .ci-article-url {
 			margin-left: 4px;
 		}
 
 		.post .header .ci-url-row {
 			padding: 0 4px 4px;
+		}
+
+		.post .header .ci-url-row .ci-article-url .ci-favicon {
+			margin-left: 0;
 		}
 		";
 	}

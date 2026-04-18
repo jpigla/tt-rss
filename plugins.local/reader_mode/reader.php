@@ -149,6 +149,7 @@
 	<link rel="shortcut icon" type="image/png" href="../../images/favicon.png">
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 	<link rel="stylesheet" href="reader_page.css">
+	<link rel="stylesheet" href="../annotations/annotations.css">
 </head>
 <body class="reader-body <?= $settings['font_family'] === 'serif' ? 'serif-font' : '' ?>"
 	data-article-id="<?= $article_id ?>"

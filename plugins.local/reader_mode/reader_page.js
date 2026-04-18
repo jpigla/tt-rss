@@ -314,7 +314,7 @@
 				m = m.trim();
 				if (!m) return;
 				var chip = el('a', 'note-card-marker');
-				chip.href = '../../index.php#f=-4&query=' + encodeURIComponent(m);
+				chip.href = '../../index.php#f=-4&query=' + encodeURIComponent('marker:' + m);
 				chip.target = '_blank';
 				chip.textContent = m;
 				chip.addEventListener('click', function (e) { e.stopPropagation(); });
@@ -883,11 +883,11 @@
 		var markersContainer = el('div');
 		var getMarkers = createMarkersInput(markersContainer, '');
 
-		// Buttons
-		var btnRow = el('div', 'ann-btn-row');
+		// Menü-Einträge
+		var divider = el('div', 'ann-menu-divider');
 
-		var saveBtn = el('button', 'ann-save-btn', 'Speichern');
-		saveBtn.addEventListener('click', function () {
+		var saveItem = el('div', 'ann-menu-item', 'Speichern');
+		saveItem.addEventListener('click', function () {
 			var activeColor = popup.querySelector('.ann-color-active');
 			var color = activeColor ? activeColor.dataset.color : '#fff3cd';
 			var selectorPath = JSON.stringify({ before: beforeText });
@@ -897,16 +897,11 @@
 			window.getSelection().removeAllRanges();
 		});
 
-		var cancelBtn = el('button', 'ann-cancel-btn', 'Abbrechen');
-		cancelBtn.addEventListener('click', function () { removePopup(); });
-
-		btnRow.appendChild(saveBtn);
-		btnRow.appendChild(cancelBtn);
-
 		popup.appendChild(colorRow);
 		popup.appendChild(noteInput);
 		popup.appendChild(markersContainer);
-		popup.appendChild(btnRow);
+		popup.appendChild(divider);
+		popup.appendChild(saveItem);
 		document.body.appendChild(popup);
 
 		setTimeout(function () {
@@ -953,14 +948,14 @@
 			}
 		});
 
-		var addBtn = el('button', 'ann-save-btn', 'Speichern');
+		var addBtn = el('div', 'ann-menu-item', 'Speichern');
 		addBtn.addEventListener('click', function () {
 			if (input.value.trim()) doSave();
 		});
 
 		inputRow.appendChild(input);
-		inputRow.appendChild(addBtn);
 		popup.appendChild(inputRow);
+		popup.appendChild(addBtn);
 		document.body.appendChild(popup);
 
 		setTimeout(function () { input.focus(); }, 50);
@@ -1121,20 +1116,11 @@
 		var markersContainer = el('div');
 		var getMarkers = createMarkersInput(markersContainer, currentMarkers);
 
-		// Buttons
-		var btnRow = el('div', 'ann-btn-row');
+		// Menü-Einträge
+		var divider = el('div', 'ann-menu-divider');
 
-		var deleteBtn = el('button', 'ann-delete-btn', 'Löschen');
-		deleteBtn.addEventListener('click', function () {
-			if (confirm('Annotation löschen?')) {
-				var card = document.querySelector('.note-card[data-ann-id="' + annId + '"]');
-				deleteAnnotation(annId, card);
-				removePopup();
-			}
-		});
-
-		var saveBtn = el('button', 'ann-save-btn', 'Speichern');
-		saveBtn.addEventListener('click', function () {
+		var saveItem = el('div', 'ann-menu-item', 'Speichern');
+		saveItem.addEventListener('click', function () {
 			var activeColor = popup.querySelector('.ann-color-active');
 			var color = activeColor ? activeColor.dataset.color : currentColor;
 			var note = noteInput.value;
@@ -1169,17 +1155,21 @@
 			removePopup();
 		});
 
-		var cancelBtn = el('button', 'ann-cancel-btn', 'Abbrechen');
-		cancelBtn.addEventListener('click', function () { removePopup(); });
-
-		btnRow.appendChild(deleteBtn);
-		btnRow.appendChild(saveBtn);
-		btnRow.appendChild(cancelBtn);
+		var deleteItem = el('div', 'ann-menu-item ann-menu-item-destructive', 'Löschen');
+		deleteItem.addEventListener('click', function () {
+			if (confirm('Annotation löschen?')) {
+				var card = document.querySelector('.note-card[data-ann-id="' + annId + '"]');
+				deleteAnnotation(annId, card);
+				removePopup();
+			}
+		});
 
 		popup.appendChild(colorRow);
 		popup.appendChild(noteInput);
 		popup.appendChild(markersContainer);
-		popup.appendChild(btnRow);
+		popup.appendChild(divider);
+		popup.appendChild(saveItem);
+		popup.appendChild(deleteItem);
 		document.body.appendChild(popup);
 
 		setTimeout(function () {

@@ -31,39 +31,39 @@
 	flex-shrink: 0;
 }
 
-/* ── Popup ────────────────────────────────────────── */
+/* ── Popup (Kontextmenü-Stil) ────────────────────── */
 .ann-popup {
 	background: var(--default-bg, #fff);
 	border: 1px solid var(--border-default, #ccc);
-	border-radius: 6px;
-	padding: 10px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	min-width: 240px;
-	max-width: 350px;
+	border-radius: 8px;
+	padding: 4px;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+	min-width: 220px;
+	max-width: 300px;
 	color: var(--default-fg, #333);
 }
 
 .ann-popup-preview {
 	font-size: 12px;
+	font-weight: 500;
 	color: var(--default-fg, #999);
-	font-style: italic;
-	margin-bottom: 8px;
-	padding: 4px 6px;
-	background: rgba(128, 128, 128, 0.08);
-	border-radius: 3px;
+	padding: 4px 8px 2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	line-height: 1.4;
 }
 
 .ann-color-row {
 	display: flex;
-	gap: 6px;
-	margin-bottom: 8px;
+	gap: 4px;
+	padding: 4px 8px;
 }
 
 .ann-color-btn {
 	display: inline-block;
-	width: 24px;
-	height: 24px;
+	width: 20px;
+	height: 20px;
 	border-radius: 50%;
 	border: 2px solid transparent;
 	cursor: pointer;
@@ -80,50 +80,47 @@
 }
 
 .ann-note-input {
-	width: 100%;
+	width: calc(100% - 16px);
 	box-sizing: border-box;
 	border: 1px solid var(--border-default, #ccc);
 	border-radius: 4px;
-	padding: 6px 8px;
+	padding: 5px 8px;
 	font-size: 12px;
 	resize: vertical;
-	margin-bottom: 8px;
+	margin: 0 8px 2px;
 	font-family: inherit;
 	color: var(--default-fg, #333);
 	background: var(--default-bg, #fff);
 }
 
-.ann-btn-row {
-	display: flex;
-	gap: 6px;
-	justify-content: flex-end;
+.ann-menu-divider {
+	height: 1px;
+	background: var(--border-default, #e0e0e0);
+	margin: 4px 8px;
 }
 
-.ann-save-btn,
-.ann-cancel-btn,
-.ann-delete-btn {
-	padding: 4px 12px;
-	border-radius: 4px;
-	border: 1px solid var(--border-default, #ccc);
+.ann-menu-item {
+	padding: 5px 8px;
+	font-size: 13px;
 	cursor: pointer;
-	font-size: 12px;
+	border-radius: 4px;
+	transition: background 0.1s;
 	color: var(--default-fg, #333);
+	display: flex;
+	align-items: center;
+	gap: 6px;
 }
 
-.ann-save-btn {
-	background: var(--color-accent, #257fad);
-	color: #fff;
-	border-color: var(--color-accent, #257fad);
+.ann-menu-item:hover {
+	background: rgba(128, 128, 128, 0.1);
 }
 
-.ann-delete-btn {
-	background: #e53935;
-	color: #fff;
-	border-color: #e53935;
+.ann-menu-item-destructive {
+	color: #e53935;
 }
 
-.ann-cancel-btn {
-	background: transparent;
+.ann-menu-item-destructive:hover {
+	background: rgba(229, 57, 53, 0.08);
 }
 
 /* ── Button-Badge ────────────────────────────────── */
@@ -451,7 +448,7 @@
 
 /* ── Marker-Input (Annotations) ────────────────── */
 .ann-markers-wrapper {
-	margin-bottom: 8px;
+	margin: 0 4px 2px;
 }
 
 .ann-markers-label {
@@ -560,31 +557,24 @@
 	box-shadow: 0 0 0 2px rgb(74 158 255 / 0.2);
 }
 
-.reader-body .ann-save-btn,
-.reader-body .ann-cancel-btn,
-.reader-body .ann-delete-btn {
-	border-color: var(--reader-border, #333);
+.reader-body .ann-menu-divider {
+	background: var(--reader-border, #333);
+}
+
+.reader-body .ann-menu-item {
 	color: var(--reader-fg, #e0e0e0);
 }
 
-.reader-body .ann-save-btn {
-	background: var(--reader-accent, #4a9eff);
-	border-color: var(--reader-accent, #4a9eff);
-	color: #fff;
+.reader-body .ann-menu-item:hover {
+	background: rgb(255 255 255 / 0.08);
 }
 
-.reader-body .ann-cancel-btn {
-	background: transparent;
+.reader-body .ann-menu-item-destructive {
+	color: #ef5350;
 }
 
-.reader-body .ann-cancel-btn:hover {
-	background: var(--reader-surface-hover, #2e2e2e);
-}
-
-.reader-body .ann-delete-btn {
-	background: #c62828;
-	border-color: #c62828;
-	color: #fff;
+.reader-body .ann-menu-item-destructive:hover {
+	background: rgb(229 57 53 / 0.12);
 }
 
 .reader-body .ann-color-btn.ann-color-active {

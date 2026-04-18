@@ -18,6 +18,7 @@ class Annotations extends Plugin {
 		$host->add_hook($host::HOOK_RENDER_ARTICLE, $this);
 		$host->add_hook($host::HOOK_ARTICLE_BUTTON, $this);
 		$host->add_hook($host::HOOK_PREFS_TAB, $this);
+		$host->add_hook($host::HOOK_SEARCH, $this);
 
 		$m = new Db_Migrations();
 		$m->initialize_for_plugin($this);
@@ -44,6 +45,30 @@ class Annotations extends Plugin {
 		// Nur GET-basierte Downloads und Lesezugriffe überspringen;
 		// add_article_tag ist schreibend und benötigt CSRF-Schutz
 		return in_array($method, ["export_csv", "export_all_csv"]);
+	}
+
+	function hook_search($query) {
+		if (!preg_match('/^marker:\s*(.+)/i', $query, $m)) {
+			return [];
+		}
+
+		$marker = trim($m[1]);
+		$pdo = Db::pdo();
+		$sth = $pdo->prepare("SELECT DISTINCT ref_id FROM ttrss_plugin_annotations
+			WHERE owner_uid = ? AND markers ILIKE ?");
+		$sth->execute([$_SESSION['uid'], '%' . $marker . '%']);
+
+		$ids = [];
+		while ($row = $sth->fetch()) {
+			$ids[] = (int) $row['ref_id'];
+		}
+
+		if (empty($ids)) {
+			return ["ttrss_entries.id IN (-1)", [$marker]];
+		}
+
+		$id_list = implode(',', $ids);
+		return ["ttrss_entries.id IN ($id_list)", [$marker]];
 	}
 
 	function hook_render_article_cdm($article) {

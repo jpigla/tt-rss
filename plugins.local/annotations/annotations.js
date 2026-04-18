@@ -366,7 +366,7 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				var popup = document.createElement('div');
 				popup.className = 'ann-popup';
 				popup.style.position = 'fixed';
-				popup.style.left = Math.min(rect.left, window.innerWidth - 300) + 'px';
+				popup.style.left = Math.min(rect.left, window.innerWidth - 240) + 'px';
 				popup.style.top = (rect.bottom + 5) + 'px';
 				popup.style.zIndex = '10000';
 
@@ -374,8 +374,8 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				var preview = document.createElement('div');
 				preview.className = 'ann-popup-preview';
 				var highlightedText = mark.textContent;
-				preview.textContent = highlightedText.length > 80
-					? highlightedText.substring(0, 80) + '\u2026'
+				preview.textContent = highlightedText.length > 50
+					? highlightedText.substring(0, 50) + '\u2026'
 					: highlightedText;
 				popup.appendChild(preview);
 
@@ -406,13 +406,13 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				var markersContainer = document.createElement('div');
 				var getMarkers = Plugins.Annotations._createMarkersInput(markersContainer, currentMarkers);
 
-				var btnRow = document.createElement('div');
-				btnRow.className = 'ann-btn-row';
+				var divider = document.createElement('div');
+				divider.className = 'ann-menu-divider';
 
-				var saveBtn = document.createElement('button');
-				saveBtn.className = 'ann-save-btn';
-				saveBtn.textContent = __('Aktualisieren');
-				saveBtn.addEventListener('click', function () {
+				var saveItem = document.createElement('div');
+				saveItem.className = 'ann-menu-item';
+				saveItem.textContent = __('Aktualisieren');
+				saveItem.addEventListener('click', function () {
 					var activeColor = popup.querySelector('.ann-color-active');
 					var color = activeColor ? activeColor.dataset.color : currentColor;
 					var note = noteInput.value;
@@ -456,29 +456,20 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 					Plugins.Annotations.removePopup();
 				});
 
-				var deleteBtn = document.createElement('button');
-				deleteBtn.className = 'ann-delete-btn';
-				deleteBtn.textContent = __('Löschen');
-				deleteBtn.addEventListener('click', function () {
+				var deleteItem = document.createElement('div');
+				deleteItem.className = 'ann-menu-item ann-menu-item-destructive';
+				deleteItem.textContent = __('Löschen');
+				deleteItem.addEventListener('click', function () {
 					Plugins.Annotations.deleteAnn(parseInt(annId), parseInt(articleId));
 					Plugins.Annotations.removePopup();
 				});
 
-				var cancelBtn = document.createElement('button');
-				cancelBtn.className = 'ann-cancel-btn';
-				cancelBtn.textContent = __('Abbrechen');
-				cancelBtn.addEventListener('click', function () {
-					Plugins.Annotations.removePopup();
-				});
-
-				btnRow.appendChild(saveBtn);
-				btnRow.appendChild(deleteBtn);
-				btnRow.appendChild(cancelBtn);
-
 				popup.appendChild(colorRow);
 				popup.appendChild(noteInput);
 				popup.appendChild(markersContainer);
-				popup.appendChild(btnRow);
+				popup.appendChild(divider);
+				popup.appendChild(saveItem);
+				popup.appendChild(deleteItem);
 				document.body.appendChild(popup);
 
 				setTimeout(function () {
@@ -693,16 +684,16 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 					}
 				});
 
-				var addBtn = document.createElement('button');
-				addBtn.className = 'ann-save-btn';
+				var addBtn = document.createElement('div');
+				addBtn.className = 'ann-menu-item';
 				addBtn.textContent = __('Hinzufügen');
 				addBtn.addEventListener('click', function () {
 					if (input.value.trim()) doAddTag();
 				});
 
 				inputRow.appendChild(input);
-				inputRow.appendChild(addBtn);
 				popup.appendChild(inputRow);
+				popup.appendChild(addBtn);
 				document.body.appendChild(popup);
 
 				setTimeout(function () { input.focus(); }, 50);
@@ -796,13 +787,13 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 				var markersContainer = document.createElement('div');
 				var getMarkers = Plugins.Annotations._createMarkersInput(markersContainer, '');
 
-				var btnRow = document.createElement('div');
-				btnRow.className = 'ann-btn-row';
+				var menuDivider = document.createElement('div');
+				menuDivider.className = 'ann-menu-divider';
 
-				var saveBtn = document.createElement('button');
-				saveBtn.className = 'ann-save-btn';
-				saveBtn.textContent = __('Speichern');
-				saveBtn.addEventListener('click', function () {
+				var saveMenuItem = document.createElement('div');
+				saveMenuItem.className = 'ann-menu-item';
+				saveMenuItem.textContent = __('Speichern');
+				saveMenuItem.addEventListener('click', function () {
 					var activeColor = popup.querySelector('.ann-color-active');
 					var color = activeColor ? activeColor.dataset.color : '#fff3cd';
 					var note = noteInput.value;
@@ -817,20 +808,11 @@ require(['dojo/_base/kernel', 'dojo/ready'], function (dojo, ready) {
 					window.getSelection().removeAllRanges();
 				});
 
-				var cancelBtn = document.createElement('button');
-				cancelBtn.className = 'ann-cancel-btn';
-				cancelBtn.textContent = __('Abbrechen');
-				cancelBtn.addEventListener('click', function () {
-					Plugins.Annotations.removePopup();
-				});
-
-				btnRow.appendChild(saveBtn);
-				btnRow.appendChild(cancelBtn);
-
 				popup.appendChild(colorRow);
 				popup.appendChild(noteInput);
 				popup.appendChild(markersContainer);
-				popup.appendChild(btnRow);
+				popup.appendChild(menuDivider);
+				popup.appendChild(saveMenuItem);
 				document.body.appendChild(popup);
 
 				setTimeout(function () {
