@@ -9,6 +9,7 @@ Thumbs.db
 /plugins.local/*
 !/plugins.local/*/
 !/plugins.local/PLUGINS-DOKUMENTATION.md
+!/plugins.local/PLUGINS-UEBERSICHT.md
 /themes.local/*
 /templates.local/*
 /config.php
