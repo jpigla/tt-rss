@@ -56,7 +56,7 @@ class OPML extends Handler_Protected {
 			$out .= $this->opml_export_category($owner_uid, $line["id"], $hide_private_feeds, $include_settings);
 		}
 
-		$fsth = $this->pdo->prepare("select title, feed_url, site_url, update_interval, order_id, purge_interval
+		$fsth = $this->pdo->prepare("select title, feed_url, site_url, update_interval, order_id, purge_interval, max_articles
 				FROM ttrss_feeds WHERE
 					(cat_id = :cat OR (:cat = 0 AND cat_id IS NULL)) AND owner_uid = :uid AND $hide_qpart
 				ORDER BY order_id, title");
@@ -73,7 +73,11 @@ class OPML extends Handler_Protected {
 				$order_id = (int)$fline["order_id"];
 				$purge_interval = (int)$fline["purge_interval"];
 
-				$ttrss_specific_qpart = "ttrssSortOrder=\"$order_id\" ttrssPurgeInterval=\"$purge_interval\" ttrssUpdateInterval=\"$update_interval\"";
+				$ttrss_specific_qpart = "ttrssSortOrder=\"$order_id\" ttrssUpdateInterval=\"$update_interval\"";
+				if (!is_null($fline["purge_interval"]))
+					$ttrss_specific_qpart .= " ttrssPurgeInterval=\"" . (int)$fline["purge_interval"] . "\"";
+				if (!is_null($fline["max_articles"]))
+					$ttrss_specific_qpart .= " ttrssMaxArticles=\"" . (int)$fline["max_articles"] . "\"";
 			} else {
 				$ttrss_specific_qpart = "";
 			}
@@ -283,14 +287,17 @@ class OPML extends Handler_Protected {
 				$order_id = (int) $attrs->getNamedItem('ttrssSortOrder')?->nodeValue;
 				if (!$order_id) $order_id = 0;
 
-				$purge_interval = (int) $attrs->getNamedItem('ttrssPurgeInterval')?->nodeValue;
-				if (!$purge_interval) $purge_interval = 0;
+				$purge_interval_attr = $attrs->getNamedItem('ttrssPurgeInterval')?->nodeValue;
+				$purge_interval = ($purge_interval_attr !== null) ? (int) $purge_interval_attr : null;
+
+				$max_articles_attr = $attrs->getNamedItem('ttrssMaxArticles')?->nodeValue;
+				$max_articles = ($max_articles_attr !== null) ? (int) $max_articles_attr : null;
 
 				$sth = $this->pdo->prepare("INSERT INTO ttrss_feeds
-					(title, feed_url, owner_uid, cat_id, site_url, order_id, update_interval, purge_interval) VALUES
-					(?, ?, ?, ?, ?, ?, ?, ?)");
+					(title, feed_url, owner_uid, cat_id, site_url, order_id, update_interval, purge_interval, max_articles) VALUES
+					(?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-				$sth->execute([$feed_title, $feed_url, $owner_uid, $cat_id, $site_url, $order_id, $update_interval, $purge_interval]);
+				$sth->execute([$feed_title, $feed_url, $owner_uid, $cat_id, $site_url, $order_id, $update_interval, $purge_interval, $max_articles]);
 
 			} else {
 				$this->opml_notice(T_sprintf("Duplicate feed: %s", $feed_title == '[Unknown]' ? $feed_url : $feed_title), $nest);

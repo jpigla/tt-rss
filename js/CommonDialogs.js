@@ -572,10 +572,18 @@ const	CommonDialogs = {
 										<label>${__('Article purging:')}</label>
 
 										${App.FormFields.select_hash("purge_interval",
-																	feed.purge_interval,
+																	feed.purge_interval == null ? "" : feed.purge_interval,
 																	reply.intervals.purge,
 																	reply.force_purge ? {disabled: 1} : {})}
 
+									</fieldset>
+									<fieldset>
+										<label>${__('Max articles:')}</label>
+										<input dojoType='dijit.form.ValidationTextBox'
+											name='max_articles' value='${feed.max_articles == null ? "" : parseInt(feed.max_articles)}'
+											regExp='^[0-9]*$' style='width:120px'
+											title="${__('empty = inherit, 0 = unlimited')}">
+										<span class='hint'>${__('(empty = inherit, 0 = unlimited)')}</span>
 									</fieldset>
 								</section>
 							</div>
@@ -635,7 +643,76 @@ const	CommonDialogs = {
 
 			dialog.show();
 		},
-		generatedFeed: function(feed, is_cat, search = "") {
+		editCategory: function(cat_id) {
+		Notify.progress("Loading, please wait...", true);
+
+		xhr.json("backend.php", {op: "Pref_Feeds", method: "editcat", id: cat_id}, (reply) => {
+			Notify.close();
+
+			try {
+				const cat = reply.cat;
+
+				const dialog = new fox.SingleUseDialog({
+					id: "editCatDlg",
+					title: __("Edit category"),
+					execute: function() {
+						if (this.validate()) {
+							Notify.progress("Saving data...", true);
+
+							xhr.post("backend.php", dialog.attr('value'), () => {
+								dialog.hide();
+								Notify.close();
+								dijit.byId("feedTree") && dijit.byId("feedTree").reload();
+							});
+							return true;
+						}
+						return false;
+					},
+					content: `
+					<form onsubmit="return false">
+						${App.FormFields.hidden_tag("id", cat_id)}
+						${App.FormFields.hidden_tag("op", "Pref_Feeds")}
+						${App.FormFields.hidden_tag("method", "saveCat")}
+
+						<section>
+							<fieldset>
+								<input dojoType='dijit.form.ValidationTextBox' required='1'
+									style='font-size:16px; width:350px'
+									name='title' value="${App.escapeHtml(cat.title)}">
+							</fieldset>
+
+							<hr/>
+
+							<fieldset>
+								<label>${__('Article purging:')}</label>
+								${App.FormFields.select_hash("purge_interval",
+									cat.purge_interval,
+									reply.intervals.purge)}
+							</fieldset>
+							<fieldset>
+								<label>${__('Max articles:')}</label>
+								<input dojoType='dijit.form.ValidationTextBox'
+									name='max_articles' value='${parseInt(cat.max_articles) || 0}'
+									regExp='^[0-9]+$' style='width:120px'
+									title="${__('0 = no override')}">
+								<span class='hint'>${__('(0 = no override)')}</span>
+							</fieldset>
+						</section>
+
+						<footer>
+							${App.FormFields.submit_tag(App.FormFields.icon("save") + " " + __("Save"), {onclick: "App.dialogOf(this).execute()"})}
+						</footer>
+					</form>`
+				});
+
+				dialog.show();
+
+			} catch (e) {
+				App.Error.report(e);
+			}
+		});
+	},
+	generatedFeed: function(feed, is_cat, search = "") {
 
 			Notify.progress("Loading, please wait...", true);
 

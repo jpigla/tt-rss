@@ -1,5 +1,70 @@
 # Changelog
 
+## 2026-04-22 — Core: NULL-Semantik für Purge & Max-Artikel (Schema-Version 154)
+
+### Refactor: Explizite Vererbungs-Semantik (Option B)
+
+**Problem:** `0` war gleichzeitig „Use default" und „unlimited" — man konnte einen Feed nicht bewusst auf den globalen Standard setzen, wenn die Kategorie etwas anderes vorgab.
+
+**Lösung:** `NULL` als „Erben"-Sentinel in `ttrss_feeds`.
+
+| Wert | `purge_interval` | `max_articles` |
+|---|---|---|
+| `NULL` | Erbt (Kategorie → Global) | Erbt (Kategorie → unlimited) |
+| `0` | Explizit: Global-Standard verwenden | Explizit: Unbegrenzt |
+| `-1` | Explizit: Nie löschen | — |
+| `> 0` | Explizit: N Tage | Explizit: N Artikel |
+
+**Migration:** `154.sql` — `DROP NOT NULL`, `DEFAULT NULL`, `UPDATE … SET … = NULL WHERE … = 0` (bestehende Feeds erben ab sofort).
+
+**UI-Änderungen:**
+- Feed-Dialog Purge-Select: neues Eintrag „Inherit (category or global default)" oben, „Use default" umbenannt zu „Use global default"
+- Max-articles-Feld: leer = NULL (erbt), `0` = explizit unbegrenzt
+- OPML: NULL-Spalten werden nicht exportiert; fehlendes Attribut beim Import → NULL
+
+**Technisch:** `Feeds::_get_purge_interval()` und `_get_max_articles()` prüfen jetzt `is_null()` statt `!= 0`; `archive_articles`-Plugin aktualisiert.
+
+---
+
+## 2026-04-22 — Core: Kategorie-Einstellungen für Purge & Max-Artikel (Schema-Version 153)
+
+### Neue Funktion: Purge-Interval und Max-Artikel für Ordner
+
+**Wo:** Einstellungen → Feeds → Ordner doppelklicken → Dialog „Edit category"
+
+Setzt `purge_interval` und `max_articles` auf Ordner-Ebene. Alle Feeds im Ordner erben diese Werte, sofern sie keinen eigenen Wert gesetzt haben.
+
+**Fallback-Kette:** Feed-Einstellung → Kategorie-Einstellung → Globale Einstellung (`PURGE_OLD_DAYS`)
+
+**Verhalten:**
+- Wert `0` auf Kategorie = „No override" (Feed-Einstellung oder globaler Default gilt)
+- Feed-spezifische Werte haben immer Vorrang vor der Kategorie
+- Kategorie-Dialog ersetzt den bisherigen simplen Rename-`prompt()` — Umbenennen weiterhin möglich
+
+**Technisch:** Migration `153.sql` (2× `ALTER TABLE ttrss_feed_categories ADD COLUMN`); `Feeds::_get_purge_interval()` / `_get_max_articles()` lösen Kategorie-Fallback via separatem ORM-Query auf.
+
+---
+
+## 2026-04-22 — Core: Max-Artikel-Limit pro Feed (Schema-Version 152)
+
+### Neue Funktion: Maximale Artikelanzahl pro Feed
+
+**Wo:** Einstellungen → Feeds → Feed bearbeiten → „Max articles" (Zahlenfeld, `0` = unbegrenzt)
+
+Begrenzt die Anzahl gespeicherter Artikel pro Feed auf einen konfigurierbaren Maximalwert. Älteste Artikel werden bei jedem Feed-Update automatisch gelöscht, sobald der Grenzwert überschritten wird.
+
+**Verhalten:**
+- Läuft bei **jedem Feed-Abruf** (nicht periodisch), unmittelbar nach dem zeitbasierten Purge
+- Gesternnte Artikel (`marked = true`) werden nie gelöscht
+- Wert `0` (Default) = kein Limit, bisheriges Verhalten unverändert
+- Kombinierbar mit `purge_interval` (Zeit-Purge läuft zuerst, Zähl-Purge danach)
+- Auch im Batch-Edit (mehrere Feeds gleichzeitig) konfigurierbar
+- Wird per OPML exportiert/importiert (`ttrssMaxArticles`-Attribut)
+
+**Technisch:** Migration `152.sql` (`ALTER TABLE ttrss_feeds ADD COLUMN max_articles integer NOT NULL DEFAULT 0`); Löschlogik in `Feeds::_purge()` via `NOT IN (SELECT ... ORDER BY int_id DESC LIMIT N)`.
+
+---
+
 ## 2026-04-12 — Neue Plugins: Phase 6 — Wissensarbeit, Analytics & Discovery
 
 ### Neue Plugins

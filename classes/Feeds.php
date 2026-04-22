@@ -2049,6 +2049,29 @@ class Feeds extends Handler_Protected {
 
 			Debug::log("purge_feed: deleted $rows_deleted articles.", Debug::LOG_VERBOSE);
 
+			$max_articles = self::_get_max_articles($feed_id);
+
+			if ($max_articles > 0) {
+				$sth = $pdo->prepare("DELETE FROM ttrss_user_entries
+					USING ttrss_entries
+					WHERE ttrss_entries.id = ref_id AND
+					marked = false AND
+					feed_id = ? AND
+					$query_limit
+					ref_id NOT IN (
+						SELECT ue2.ref_id FROM ttrss_user_entries ue2
+						WHERE ue2.feed_id = ?
+						ORDER BY ue2.int_id DESC
+						LIMIT $max_articles
+					)");
+				$sth->execute([$feed_id, $feed_id]);
+
+				$count_deleted = $sth->rowCount();
+				$rows_deleted += $count_deleted;
+
+				Debug::log("purge_feed: max_articles=$max_articles, deleted $count_deleted additional articles.", Debug::LOG_VERBOSE);
+			}
+
 		} else {
 			Debug::log("purge_feed: owner of $feed_id not found", Debug::LOG_VERBOSE);
 		}
@@ -2056,15 +2079,54 @@ class Feeds extends Handler_Protected {
 		return $rows_deleted;
 	}
 
-	private static function _get_purge_interval(int $feed_id): int {
+	private static function _get_max_articles(int $feed_id): int {
 		$feed = ORM::for_table('ttrss_feeds')
-			->select_many('purge_interval', 'owner_uid')
+			->select_many('max_articles', 'cat_id')
 			->find_one($feed_id);
 
-		if ($feed)
-			return $feed->purge_interval != 0 ? $feed->purge_interval : Prefs::get(Prefs::PURGE_OLD_DAYS, $feed->owner_uid);
-		else
-			return -1;
+		if (!$feed) return 0;
+
+		// NULL = inherit; 0 = explicitly unlimited; >0 = limit
+		if (!is_null($feed->max_articles))
+			return (int) $feed->max_articles;
+
+		if ($feed->cat_id) {
+			$cat = ORM::for_table('ttrss_feed_categories')
+				->select('max_articles')
+				->find_one($feed->cat_id);
+			if ($cat && $cat->max_articles != 0)
+				return (int) $cat->max_articles;
+		}
+
+		return 0;
+	}
+
+	private static function _get_purge_interval(int $feed_id): int {
+		$feed = ORM::for_table('ttrss_feeds')
+			->select_many('purge_interval', 'owner_uid', 'cat_id')
+			->find_one($feed_id);
+
+		if (!$feed) return -1;
+
+		// NULL = inherit (category → global)
+		// 0   = explicitly use global default (skip category)
+		// -1  = never purge
+		// >0  = specific days
+		if (!is_null($feed->purge_interval)) {
+			if ((int) $feed->purge_interval === 0)
+				return Prefs::get(Prefs::PURGE_OLD_DAYS, $feed->owner_uid);
+			return (int) $feed->purge_interval;
+		}
+
+		if ($feed->cat_id) {
+			$cat = ORM::for_table('ttrss_feed_categories')
+				->select('purge_interval')
+				->find_one($feed->cat_id);
+			if ($cat && $cat->purge_interval != 0)
+				return (int) $cat->purge_interval;
+		}
+
+		return Prefs::get(Prefs::PURGE_OLD_DAYS, $feed->owner_uid);
 	}
 
 	/**

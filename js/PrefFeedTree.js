@@ -379,16 +379,7 @@ define(["dojo/_base/declare", "dojo/dom-construct", "lib/CheckBoxTree", "dojo/_b
 			if (String(item.id) === "CAT:0")
 				return;
 
-			const new_name = prompt(__('Rename category to:'), item.name);
-
-			if (new_name && new_name !== item.name) {
-
-				Notify.progress("Loading, please wait...");
-
-				xhr.post("backend.php", { op: 'Pref_Feeds', method: 'renamecat', id: id, title: new_name }, () => {
-					this.reload();
-				});
-			}
+			CommonDialogs.editCategory(id);
 		},
 		createCategory: function() {
 			const title = prompt(__("Category title:"));

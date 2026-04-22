@@ -30,6 +30,46 @@ class Pref_Feeds extends Handler_Protected {
 		}
 	}
 
+	function editcat(): void {
+		global $purge_intervals;
+
+		$cat_id = (int) clean($_REQUEST['id']);
+
+		$cat = ORM::for_table('ttrss_feed_categories')
+			->where('owner_uid', $_SESSION['uid'])
+			->find_one($cat_id);
+
+		if ($cat) {
+			$local_purge_intervals = $purge_intervals;
+			$local_purge_intervals[0] = __('No override');
+
+			print json_encode([
+				'cat' => $cat->as_array(),
+				'intervals' => [
+					'purge' => $local_purge_intervals,
+				],
+			]);
+		}
+	}
+
+	function saveCat(): void {
+		$cat_id = (int) clean($_POST['id']);
+		$title = clean($_POST['title'] ?? '');
+		$purge_intl = (int) clean($_POST['purge_interval'] ?? 0);
+		$max_articles = max(0, (int) clean($_POST['max_articles'] ?? 0));
+
+		$cat = ORM::for_table('ttrss_feed_categories')
+			->where('owner_uid', $_SESSION['uid'])
+			->find_one($cat_id);
+
+		if ($cat && $title) {
+			$cat->title = $title;
+			$cat->purge_interval = $purge_intl;
+			$cat->max_articles = $max_articles;
+			$cat->save();
+		}
+	}
+
 	/**
 	 * @return array<int, array<string, bool|int|string>>
 	 */
@@ -535,14 +575,13 @@ class Pref_Feeds extends Handler_Protected {
 			$local_update_intervals[0] .= sprintf(" (%s)", $update_intervals[Prefs::get(Prefs::DEFAULT_UPDATE_INTERVAL, $_SESSION['uid'])]);
 
 			if (Config::get(Config::FORCE_ARTICLE_PURGE) == 0) {
-				$local_purge_intervals = $purge_intervals;
 				$default_purge_interval = Prefs::get(Prefs::PURGE_OLD_DAYS, $_SESSION['uid']);
+				$global_label = $default_purge_interval > 0
+					? T_nsprintf('(%d day)', '(%d days)', $default_purge_interval, $default_purge_interval)
+					: sprintf("(%s)", __("Disabled"));
 
-				if ($default_purge_interval > 0)
-					$local_purge_intervals[0] .= " " . T_nsprintf('(%d day)', '(%d days)', $default_purge_interval, $default_purge_interval);
-				else
-					$local_purge_intervals[0] .= " " . sprintf("(%s)", __("Disabled"));
-
+				$local_purge_intervals = ["" => __("Inherit (category or global default)")] + $purge_intervals;
+				$local_purge_intervals[0] = __("Use global default") . " " . $global_label;
 			} else {
 				$purge_interval = Config::get(Config::FORCE_ARTICLE_PURGE);
 				$local_purge_intervals = [ T_nsprintf('%d day', '%d days', $purge_interval, $purge_interval) ];
@@ -588,13 +627,13 @@ class Pref_Feeds extends Handler_Protected {
 		$local_update_intervals = $update_intervals;
 		$local_update_intervals[0] .= sprintf(" (%s)", $update_intervals[Prefs::get(Prefs::DEFAULT_UPDATE_INTERVAL, $_SESSION['uid'])]);
 
-		$local_purge_intervals = $purge_intervals;
 		$default_purge_interval = Prefs::get(Prefs::PURGE_OLD_DAYS, $_SESSION['uid']);
+		$global_label = $default_purge_interval > 0
+			? T_sprintf("(%d days)", $default_purge_interval)
+			: sprintf("(%s)", __("Disabled"));
 
-		if ($default_purge_interval > 0)
-			$local_purge_intervals[0] .= " " . T_sprintf("(%d days)", $default_purge_interval);
-		else
-			$local_purge_intervals[0] .= " " . sprintf("(%s)", __("Disabled"));
+		$local_purge_intervals = ["" => __("Inherit (category or global default)")] + $purge_intervals;
+		$local_purge_intervals[0] = __("Use global default") . " " . $global_label;
 
 		$options = [
 			"include_in_digest" => __('Include in email digest'),
@@ -645,6 +684,16 @@ class Pref_Feeds extends Handler_Protected {
 							<?= $this->_batch_toggle_checkbox("purge_interval") ?>
 						</fieldset>
 					<?php } ?>
+
+
+					<fieldset>
+						<label><?= __('Max articles:') ?></label>
+						<input dojoType='dijit.form.ValidationTextBox'
+							disabled='1' name='max_articles' value='0'
+							regExp='^[0-9]+$' style='width:120px'
+							title='<?= __("0 = unlimited") ?>'>
+						<?= $this->_batch_toggle_checkbox("max_articles") ?>
+					</fieldset>
 				</section>
 			</div>
 			<div dojoType="dijit.layout.ContentPane" title="<?= __('Authentication') ?>">
@@ -699,7 +748,10 @@ class Pref_Feeds extends Handler_Protected {
 		$feed_url = clean($_POST["feed_url"] ?? "");
 		$site_url = clean($_POST["site_url"] ?? "");
 		$upd_intl = (int) clean($_POST["update_interval"] ?? 0);
-		$purge_intl = (int) clean($_POST["purge_interval"] ?? 0);
+		$purge_intl_raw = clean($_POST["purge_interval"] ?? "");
+		$purge_intl = ($purge_intl_raw === "" || is_null($purge_intl_raw)) ? null : (int) $purge_intl_raw;
+		$max_articles_raw = clean($_POST["max_articles"] ?? "");
+		$max_articles = ($max_articles_raw === "" || is_null($max_articles_raw)) ? null : max(0, (int) $max_articles_raw);
 		$feed_id = (int) clean($_POST["id"] ?? 0); /* editSave */
 		$feed_ids = self::_param_to_int_array($_POST['ids'] ?? ''); /* batchEditSave */
 		$cat_id = (int) clean($_POST["cat_id"] ?? 0);
@@ -739,6 +791,7 @@ class Pref_Feeds extends Handler_Protected {
 				$feed->site_url = 						$site_url;
 				$feed->update_interval =				$upd_intl;
 				$feed->purge_interval =					$purge_intl;
+				$feed->max_articles =					$max_articles;
 				$feed->auth_login = 						$auth_login;
 				$feed->auth_pass = 						$auth_pass;
 				$feed->private = 							(int)$private;
@@ -784,6 +837,11 @@ class Pref_Feeds extends Handler_Protected {
 					case "purge_interval":
 						$qpart = "purge_interval = ?";
 						$qparams = [$purge_intl];
+						break;
+
+					case "max_articles":
+						$qpart = "max_articles = ?";
+						$qparams = [$max_articles];
 						break;
 
 					case "auth_login":
