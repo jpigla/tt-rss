@@ -47,7 +47,6 @@ Dieses Fork erweitert TT-RSS um Funktionen nach dem Vorbild von [Inoreader](http
 | **boosted_feeds** | Kürzere Aktualisierungsintervalle für ausgewählte Feeds |
 | **keyword_spotlight** | Keywords farblich hervorheben (5 Farbgruppen) |
 | **filter_log** | Protokoll aller Filter-Aktionen mit Detailtabelle |
-| **read_later** | Später-Lesen-Funktion mit Hotkey `l` |
 | **af_fulltext** | Volltext-Extraktion direkt im Reader |
 | **enhanced_tags** | Erweitertes Tagging: Autocomplete, Tag-Cloud, Kreuzsuche |
 | **dedup_filter** | Duplikaterkennung via Titel-Ähnlichkeit und URL |

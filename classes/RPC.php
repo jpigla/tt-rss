@@ -434,7 +434,8 @@ class RPC extends Handler_Protected {
 				errno NOT IN (".E_USER_NOTICE.", ".E_USER_DEPRECATED.") AND
 				created_at > NOW() - INTERVAL '1 hour' AND
 				errstr NOT LIKE '%Returning bool from comparison function is deprecated%' AND
-				errstr NOT LIKE '%imagecreatefromstring(): Data is not in a recognized format%'");
+				errstr NOT LIKE '%imagecreatefromstring(): Data is not in a recognized format%' AND
+			errstr NOT LIKE '%with invalid CSRF token%'");
 			$sth->execute();
 
 			if ($row = $sth->fetch()) {

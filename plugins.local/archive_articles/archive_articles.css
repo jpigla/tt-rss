@@ -1,2 +1,22 @@
-/* Archive Articles Plugin — keine zusaetzlichen Styles noetig,
-   nutzt bestehende dijit-Menu und tt-rss Klassen */
+/* ═══════════════════════════════════════════════════════════════
+   Archive Articles — Visuelle Zustände für Archivierung
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Archivierter Button-Zustand (Artikel ist bereits archiviert) */
+.aa-btn--archived {
+	color: var(--info-color, #4a9eda) !important;
+}
+
+/* Hover: Archiv-Button leuchtet beim Drüberfahren auf */
+.aa-btn:hover {
+	opacity: 0.75;
+}
+
+/* Feeds mit "Nie purgen" in der Prefs-Tabelle hervorheben */
+tr.aa-never-purge td {
+	color: var(--info-color, #4a9eda);
+}
+
+tr.aa-never-purge td:first-child::after {
+	content: ' 🔒';
+}

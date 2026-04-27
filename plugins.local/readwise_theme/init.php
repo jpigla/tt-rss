@@ -17,6 +17,8 @@ class Readwise_Theme extends Plugin {
 		$host->add_hook($host::HOOK_PREFS_TAB, $this);
 		$host->add_hook($host::HOOK_RENDER_ARTICLE_CDM, $this);
 		$host->add_hook($host::HOOK_RENDER_ARTICLE, $this);
+		$host->add_hook($host::HOOK_HOTKEY_MAP, $this);
+		$host->add_hook($host::HOOK_HOTKEY_INFO, $this);
 	}
 
 	function get_css() {
@@ -221,6 +223,16 @@ class Readwise_Theme extends Plugin {
 			</form>
 		</div>
 		<?php
+	}
+
+	function hook_hotkey_map($hotkeys) {
+		$hotkeys["l"] = "toggle_mark";
+		return $hotkeys;
+	}
+
+	function hook_hotkey_info($hotkeys) {
+		$hotkeys[__("Article")] .= "<li>" . __("<kbd>l</kbd> - Später lesen umschalten") . "</li>";
+		return $hotkeys;
 	}
 
 	function save(): void {

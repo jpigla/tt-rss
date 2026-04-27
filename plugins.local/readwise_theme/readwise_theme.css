@@ -1580,12 +1580,16 @@ body.ttrss_main .cdm.marked.published .left i.marked-pic::before {
 
 /* ─── Kontextmenüs & Dropdown-Menüs ─────────────────────────── */
 
-body.ttrss_main .dijitMenu,
 body.ttrss_main .dijitMenuPopup {
-	background: var(--rw-bg-elevated) !important;
 	border: 1px solid var(--rw-border-focus) !important;
 	border-radius: var(--rw-radius-md) !important;
 	box-shadow: var(--rw-shadow-lg) !important;
+}
+
+body.ttrss_main .dijitMenu {
+	background: var(--rw-bg-elevated) !important;
+	border: none !important;
+	border-radius: var(--rw-radius-md) !important;
 	padding: 4px 0 !important;
 }
 

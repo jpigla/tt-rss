@@ -11,8 +11,7 @@ Dieses Dokument beschreibt die selbst entwickelten Plugins, die Tiny Tiny RSS um
 3. [Plugin 2: boosted_feeds](#2-boosted_feeds--priority-feeds)
 4. [Plugin 3: keyword_spotlight](#3-keyword_spotlight--keyword-highlighting)
 5. [Plugin 4: filter_log](#4-filter_log--filter-protokoll)
-6. [Plugin 5: read_later](#5-read_later--später-lesen)
-7. [Plugin 6: af_fulltext](#6-af_fulltext--volltext-extraktion)
+6. [Plugin 5: af_fulltext](#5-af_fulltext--volltext-extraktion)
 8. [Plugin 7: enhanced_tags](#7-enhanced_tags--erweitertes-tagging)
 9. [Plugin 8: ai_core](#8-ai_core--llm-abstraktionsschicht)
 10. [Plugin 9: ai_summary](#9-ai_summary--ki-zusammenfassungen)
@@ -245,55 +244,7 @@ Indizes auf `owner_uid` und `triggered_at` für schnelle Abfragen.
 
 ---
 
-## 5. read_later -- Später Lesen
-
-**Verzeichnis:** `plugins.local/read_later/`
-**Dateien:** `init.php`, `read_later.js`, `read_later.css`
-**Inoreader-Pendant:** "Read-later-Liste"
-
-### Funktionsweise
-
-Stellt eine "Später lesen"-Funktion bereit, die über ein dediziertes Label implementiert ist. Artikel können per Button oder Hotkey zur Leseliste hinzugefügt/entfernt werden.
-
-### Architektur-Entscheidung
-
-**Warum Label statt IVirtualFeed?**
-
-`IVirtualFeed::get_headlines()` muss ein Ergebnis zurückgeben, das kompatibel mit `Feeds::_get_headlines()` ist -- eine komplexe Funktion mit ~500 Zeilen SQL-Aufbau. Statt diese Logik zu replizieren, nutzt das Plugin ein dediziertes Label (`📌 Später lesen`), das sich automatisch in die bestehende Infrastruktur einfügt:
-
-- **Zähler**: Labels haben eigene Unread-Counts in der Sidebar
-- **Feed-Ansicht**: Labels sind als virtuelle Feeds aufrufbar
-- **API**: Labels werden von der API korrekt exponiert
-- **Suche**: Labels sind in Filtern und Suche nutzbar
-
-### Hooks
-
-| Hook | Zweck |
-|------|-------|
-| `HOOK_ARTICLE_BUTTON` | Bookmark-Icon am Artikel (gefüllt/leer je nach Status) |
-| `HOOK_HOTKEY_MAP` | Taste `l` für Toggle |
-| `HOOK_HOTKEY_INFO` | Hotkey in der Hilfe anzeigen |
-
-### AJAX-Endpunkt
-
-`toggle(id)` -- Wechselt den Read-Later-Status eines Artikels:
-- Prüft ob Label zugewiesen via `ttrss_user_labels2`
-- Ruft `Labels::add_article()` oder `Labels::remove_article()` auf
-- Gibt JSON mit `{id, saved: bool}` zurück
-
-### JavaScript-Integration
-
-```javascript
-// Hotkey-Registrierung über TT-RSS App-System
-App.hotkey_actions["read_later_toggle"] = () => {
-    const id = Headlines.getActive();
-    if (id) Plugins.Read_Later.toggle(id);
-};
-```
-
----
-
-## 6. af_fulltext -- Volltext-Extraktion
+## 5. af_fulltext -- Volltext-Extraktion
 
 **Verzeichnis:** `plugins.local/af_fulltext/`
 **Dateien:** `init.php`, `af_fulltext.js`, `af_fulltext.css`
@@ -520,7 +471,7 @@ Die drei Modus-Buttons erlauben den Wechsel ohne die Seite neu zu laden.
 # Alle Plugins liegen bereits in plugins.local/
 ls plugins.local/
 # reading_time  boosted_feeds  keyword_spotlight  filter_log
-# read_later    af_fulltext    enhanced_tags
+# af_fulltext    enhanced_tags
 # ai_core       ai_summary
 ```
 
@@ -540,8 +491,7 @@ ls plugins.local/
 | 2 | `boosted_feeds` | Keine |
 | 3 | `keyword_spotlight` | Keine |
 | 4 | `filter_log` | Keine (erstellt DB-Tabelle automatisch) |
-| 5 | `read_later` | Keine (erstellt Label automatisch) |
-| 6 | `af_fulltext` | Keine |
+| 5 | `af_fulltext` | Keine |
 | 7 | `enhanced_tags` | Keine |
 | 8 | `ai_core` | Keine -- **vor** ai_summary aktivieren |
 | 9 | `ai_summary` | `ai_core` muss aktiv sein |

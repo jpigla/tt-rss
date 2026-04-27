@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Archive Articles — Archiv-Buttons, Kontextmenü, API
+   Archive Articles — Archiv-Buttons, Kontextmenü, Purge-Einstellungen
    ═══════════════════════════════════════════════════════════════ */
 
 'use strict';
@@ -25,7 +25,7 @@ const ArchiveArticles = {
 	archiveSelection: function () {
 		const rows = Headlines.getSelected();
 		if (rows.length === 0) {
-			alert(__("No articles selected."));
+			alert(__('No articles selected.'));
 			return;
 		}
 		ArchiveArticles._callApi('archiveSelection', rows);
@@ -34,14 +34,88 @@ const ArchiveArticles = {
 	unarchiveSelection: function () {
 		const rows = Headlines.getSelected();
 		if (rows.length === 0) {
-			alert(__("No articles selected."));
+			alert(__('No articles selected.'));
 			return;
 		}
 		ArchiveArticles._callApi('unarchiveSelection', rows);
 	},
 
 	/**
-	 * Fuegt Archiv-Optionen in das Bulk-Actions-Dropdown ein.
+	 * Wird vom Artikel-Button aufgerufen.
+	 * Archiviert oder dearchiviert einen einzelnen Artikel.
+	 */
+	toggleFromButton: function (id, isArchived) {
+		const method = isArchived ? 'unarchiveSelection' : 'archiveSelection';
+		ArchiveArticles._callApi(method, [id], function () {
+			// Button-Zustand aktualisieren
+			const btn = document.querySelector('.aa-btn[data-article-id="' + id + '"]');
+			if (!btn) return;
+
+			const nowArchived = !isArchived;
+			btn.textContent  = nowArchived ? 'unarchive' : 'archive';
+			btn.title        = nowArchived ? __('Dearchivieren') : __('Archivieren (Purge-Schutz)');
+			btn.dataset.archived = nowArchived ? '1' : '0';
+			btn.classList.toggle('aa-btn--archived', nowArchived);
+			btn.setAttribute('onclick',
+				'ArchiveArticles.toggleFromButton(' + id + ', ' + (nowArchived ? 'true' : 'false') + ')');
+		});
+	},
+
+	/**
+	 * Feed-Purge auf "Nie" setzen (-1).
+	 */
+	setNeverPurge: function (feedId, btn) {
+		xhr.json(ArchiveArticles.PLUGIN_URL, {
+			op: 'PluginHandler',
+			plugin: 'archive_articles',
+			method: 'setFeedPurge',
+			feed_id: feedId,
+			purge_interval: -1
+		}, function (reply) {
+			Notify.info(reply || __('Gespeichert.'));
+			// Zeile aktualisieren ohne Reload
+			if (btn) {
+				const row = btn.closest('tr');
+				if (row) {
+					row.classList.add('aa-never-purge');
+					const cell = row.querySelector('td:nth-child(2)');
+					if (cell) cell.textContent = __('Nie');
+					btn.textContent = __('Standard');
+					btn.setAttribute('onclick',
+						'ArchiveArticles.resetPurge(' + feedId + ', this); return false');
+				}
+			}
+		});
+	},
+
+	/**
+	 * Feed-Purge auf Standard zurücksetzen (0 = Benutzereinstellung).
+	 */
+	resetPurge: function (feedId, btn) {
+		xhr.json(ArchiveArticles.PLUGIN_URL, {
+			op: 'PluginHandler',
+			plugin: 'archive_articles',
+			method: 'setFeedPurge',
+			feed_id: feedId,
+			purge_interval: 0
+		}, function (reply) {
+			Notify.info(reply || __('Gespeichert.'));
+			if (btn) {
+				const row = btn.closest('tr');
+				if (row) {
+					row.classList.remove('aa-never-purge');
+					const cell = row.querySelector('td:nth-child(2)');
+					if (cell) cell.textContent = __('Standard');
+					btn.textContent = __('Nie purgen');
+					btn.setAttribute('onclick',
+						'ArchiveArticles.setNeverPurge(' + feedId + ', this); return false');
+				}
+			}
+		});
+	},
+
+	/**
+	 * Fügt Archiv-Optionen in das Bulk-Actions-Dropdown ein.
 	 */
 	enhanceBulkActions: function () {
 		const selects = document.querySelectorAll('select[onchange*="headlineActing"]');
@@ -49,7 +123,6 @@ const ArchiveArticles = {
 			if (sel.dataset.archiveDone) return;
 			sel.dataset.archiveDone = '1';
 
-			// Archiv-Option hinzufuegen
 			const archiveOpt = document.createElement('option');
 			archiveOpt.value = 'archive_archiveSelection';
 			archiveOpt.textContent = __('Archive');
@@ -64,11 +137,9 @@ const ArchiveArticles = {
 	},
 
 	/**
-	 * Fuegt Archiv-Eintrag ins Kontextmenü ein (dijit.Menu).
-	 * Wird ueber MutationObserver nach dem Rendern aufgerufen.
+	 * Fügt Archiv-Eintrag ins Kontextmenü ein (dijit.Menu).
 	 */
 	enhanceContextMenu: function () {
-		// Das Headlines-Kontextmenu heisst 'headlinesMenu'
 		var menu;
 		try {
 			menu = dijit.byId('headlinesMenu');
@@ -81,15 +152,13 @@ const ArchiveArticles = {
 		menu.addChild(new dijit.MenuSeparator());
 
 		var archiveItem = new dijit.MenuItem({
-			label: __("Archive"),
+			label: __('Archive'),
 			onClick: function () {
 				var isArchive = Feeds.getActive() === 0 && !Feeds.activeIsCat();
 				var method = isArchive ? 'unarchiveSelection' : 'archiveSelection';
-
 				var id = parseInt(this.getParent().currentTarget.getAttribute('data-article-id'));
 				var ids = Headlines.getSelected();
 				ids = ids.includes(id) ? ids : [id];
-
 				ArchiveArticles._callApi(method, ids);
 			}
 		});
@@ -98,13 +167,10 @@ const ArchiveArticles = {
 
 		dojo.connect(menu, '_openMyself', function () {
 			var isArchive = Feeds.getActive() === 0 && !Feeds.activeIsCat();
-			archiveItem.set('label', isArchive ? __("Unarchive") : __("Archive"));
+			archiveItem.set('label', isArchive ? __('Unarchive') : __('Archive'));
 		});
 	},
 
-	/**
-	 * Überwacht das Bulk-Actions-Dropdown fuer die eigenen Aktionen.
-	 */
 	handleBulkAction: function (value) {
 		if (value === 'archive_archiveSelection') {
 			ArchiveArticles.archiveSelection();
@@ -118,12 +184,10 @@ const ArchiveArticles = {
 	},
 
 	init: function () {
-		// Kontextmenu erweitern (muss warten bis dijit geladen hat)
 		setTimeout(function () {
 			ArchiveArticles.enhanceContextMenu();
 		}, 1000);
 
-		// Überwache Bulk-Actions Dropdown via Event-Delegation
 		document.addEventListener('change', function (e) {
 			var target = e.target;
 			if (target && target.tagName === 'SELECT' && target.onchange) {
@@ -135,7 +199,6 @@ const ArchiveArticles = {
 			}
 		}, true);
 
-		// Beobachte DOM-Aenderungen fuer dynamische Elemente
 		var observer = new MutationObserver(function (mutations) {
 			for (var m of mutations) {
 				if (m.addedNodes.length > 0) {
