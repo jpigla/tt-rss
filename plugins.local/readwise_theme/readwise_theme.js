@@ -140,15 +140,15 @@ const ReadwiseTheme = {
 		// Autor
 		if (meta.author) {
 			if (partCount > 0) infoSpan.appendChild(ReadwiseTheme.el('span', 'rw-meta-sep', '\u00B7'));
-			var authorEl = ReadwiseTheme.el('a', 'rw-meta-author', meta.author);
-			authorEl.href = '#';
-			authorEl.title = 'Alle Artikel von ' + meta.author + ' anzeigen';
-			authorEl.addEventListener('click', function (e) {
+			var authorLink = ReadwiseTheme.el('a', 'rw-meta-author', meta.author);
+			authorLink.href = '#';
+			authorLink.title = 'Alle Artikel von ' + meta.author + ' anzeigen';
+			authorLink.addEventListener('click', function (e) {
 				e.stopPropagation();
 				e.preventDefault();
 				ReadwiseTheme.openAuthorSearch(meta.author);
 			});
-			infoSpan.appendChild(authorEl);
+			infoSpan.appendChild(authorLink);
 			partCount++;
 		}
 
