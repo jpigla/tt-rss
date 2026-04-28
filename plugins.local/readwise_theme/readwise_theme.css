@@ -771,15 +771,13 @@ body.ttrss_main .post .header .post-article-url-favicon {
 
 body.ttrss_main .post .header .author.rw-author-clickable {
 	cursor: pointer;
-	display: inline-flex;
-	align-items: center;
-	gap: 3px;
 }
 
-body.ttrss_main .post .header .author.rw-author-clickable .post-author-icon {
+body.ttrss_main .post .header .post-author-icon {
 	font-size: 14px !important;
 	color: var(--rw-text-muted);
-	flex-shrink: 0;
+	vertical-align: middle;
+	margin-right: 2px;
 }
 
 body.ttrss_main .post .header .author.rw-author-clickable:hover {

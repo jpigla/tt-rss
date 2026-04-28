@@ -399,7 +399,7 @@ const ReadwiseTheme = {
 			var authorIcon = document.createElement('i');
 			authorIcon.className = 'material-icons post-author-icon';
 			authorIcon.textContent = 'person';
-			authorDiv.insertBefore(authorIcon, authorDiv.firstChild);
+			authorDiv.parentNode.insertBefore(authorIcon, authorDiv);
 
 			authorDiv.addEventListener('click', function (e) {
 				e.stopPropagation();
