@@ -737,6 +737,23 @@ body.ttrss_main .post .header .title {
 	font-family: var(--rw-font-ui);
 }
 
+body.ttrss_main .post .header .post-article-url {
+	display: block;
+	font-size: 0.78em;
+	color: var(--rw-text-muted);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 100%;
+	margin-top: 3px;
+	text-decoration: none;
+}
+
+body.ttrss_main .post .header .post-article-url:hover {
+	color: var(--rw-accent);
+	text-decoration: underline;
+}
+
 body.ttrss_main .post .header img,
 body.ttrss_main .post .header i.material-icons {
 	color: var(--rw-text-muted) !important;

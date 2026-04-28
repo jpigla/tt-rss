@@ -341,6 +341,25 @@ const ReadwiseTheme = {
 	},
 
 	/**
+	 * Zeigt die vollständige Artikel-URL unter dem Titel im ContentPane (3-Panel-Ansicht).
+	 */
+	enhancePostView: function (post) {
+		if (post.dataset.rwPostDone) return;
+		post.dataset.rwPostDone = '1';
+
+		var titleLink = post.querySelector('.header .title a');
+		if (!titleLink || !titleLink.href) return;
+
+		var urlLink = document.createElement('a');
+		urlLink.className = 'post-article-url';
+		urlLink.href = titleLink.href;
+		urlLink.target = '_blank';
+		urlLink.rel = 'noopener noreferrer';
+		urlLink.textContent = titleLink.href;
+		titleLink.insertAdjacentElement('afterend', urlLink);
+	},
+
+	/**
 	 * Prüft ob ein Artikel Content-Bilder hat. Falls nicht, werden Enclosure-Bilder angezeigt.
 	 */
 	handleEnclosureFallback: function (container) {
@@ -483,12 +502,16 @@ const ReadwiseTheme = {
 
 		observer.observe(frame, { childList: true, subtree: true });
 
-		// 3-Panel: Enclosure-Fallback für .post-Ansicht
+		// 3-Panel: URL + Enclosure-Fallback für .post-Ansicht
 		const contentInsert = document.getElementById('content-insert');
 		if (contentInsert) {
 			const postObserver = new MutationObserver(function () {
-				const content = contentInsert.querySelector('.post div.content');
-				if (content) ReadwiseTheme.handleEnclosureFallback(content);
+				const post = contentInsert.querySelector('.post');
+				if (post) {
+					ReadwiseTheme.enhancePostView(post);
+					const content = post.querySelector('div.content');
+					if (content) ReadwiseTheme.handleEnclosureFallback(content);
+				}
 			});
 			postObserver.observe(contentInsert, { childList: true, subtree: true });
 		}
