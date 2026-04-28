@@ -395,6 +395,12 @@ const ReadwiseTheme = {
 			var authorName = authorDiv.textContent.trim();
 			authorDiv.classList.add('rw-author-clickable');
 			authorDiv.title = 'Alle Artikel von ' + authorName + ' anzeigen';
+
+			var authorIcon = document.createElement('i');
+			authorIcon.className = 'material-icons post-author-icon';
+			authorIcon.textContent = 'person';
+			authorDiv.insertBefore(authorIcon, authorDiv.firstChild);
+
 			authorDiv.addEventListener('click', function (e) {
 				e.stopPropagation();
 				ReadwiseTheme.openAuthorSearch(authorName);
