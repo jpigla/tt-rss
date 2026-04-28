@@ -169,8 +169,9 @@ fi
 
 # Schema-Version prüfen
 UPSTREAM_SCHEMA=$(git show "$UPSTREAM_REF":classes/Config.php 2>/dev/null \
-  | grep -oP "SCHEMA_VERSION\s*=\s*\K\d+" | head -1 || true)
-LOCAL_SCHEMA=$(grep -oP "SCHEMA_VERSION\s*=\s*\K\d+" classes/Config.php | head -1 || true)
+  | grep -oE "SCHEMA_VERSION\s*=\s*[0-9]+" | grep -oE "[0-9]+$" | head -1 || true)
+LOCAL_SCHEMA=$(grep -oE "SCHEMA_VERSION\s*=\s*[0-9]+" classes/Config.php \
+  | grep -oE "[0-9]+$" | head -1 || true)
 
 if [[ -n "$UPSTREAM_SCHEMA" && -n "$LOCAL_SCHEMA" ]]; then
   if [[ "$UPSTREAM_SCHEMA" != "$LOCAL_SCHEMA" ]]; then
