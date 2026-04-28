@@ -88,11 +88,12 @@ if [[ "$DRY_RUN" == "true" ]]; then
   warn "DRY-RUN aktiv — keine Git-Operationen werden ausgeführt."
 fi
 
-# Working Tree prüfen
-DIRTY=$(git status --porcelain)
+# Working Tree prüfen (nur tracked Änderungen — untracked Files blockieren nicht)
+DIRTY=$(git status --porcelain | grep -v "^??")
+UNTRACKED=$(git status --porcelain | grep "^??" | awk '{print $2}')
 if [[ -n "$DIRTY" ]]; then
-  error "Working Tree hat uncommitted Changes:"
-  git status --short
+  error "Working Tree hat uncommitted Changes (tracked):"
+  git status --short | grep -v "^?"
   echo
   error "Bitte erst committen oder stashen:"
   echo "  git stash push -m 'vor-upstream-sync'"
@@ -100,7 +101,11 @@ if [[ -n "$DIRTY" ]]; then
   echo "  git stash pop"
   exit 3
 fi
-ok "Working Tree sauber."
+if [[ -n "$UNTRACKED" ]]; then
+  warn "Untracked Files vorhanden (werden ignoriert):"
+  echo "$UNTRACKED" | sed 's/^/  /'
+fi
+ok "Working Tree sauber (keine tracked Änderungen)."
 
 # Remotes prüfen
 git remote get-url "$UPSTREAM_REMOTE" &>/dev/null \
