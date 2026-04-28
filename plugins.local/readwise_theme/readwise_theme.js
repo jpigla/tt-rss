@@ -373,7 +373,21 @@ const ReadwiseTheme = {
 		urlLink.href = titleLink.href;
 		urlLink.target = '_blank';
 		urlLink.rel = 'noopener noreferrer';
-		urlLink.textContent = titleLink.href;
+
+		try {
+			var faviconDomain = new URL(titleLink.href).hostname;
+			if (faviconDomain) {
+				var faviconImg = document.createElement('img');
+				faviconImg.className = 'post-article-url-favicon';
+				faviconImg.src = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(faviconDomain) + '&sz=16';
+				faviconImg.alt = '';
+				faviconImg.loading = 'lazy';
+				faviconImg.onerror = function () { this.style.display = 'none'; };
+				urlLink.appendChild(faviconImg);
+			}
+		} catch (e) { /* ungültige URL — kein Favicon */ }
+
+		urlLink.appendChild(document.createTextNode(titleLink.href));
 		titleLink.insertAdjacentElement('afterend', urlLink);
 
 		var authorDiv = post.querySelector('.header .author');

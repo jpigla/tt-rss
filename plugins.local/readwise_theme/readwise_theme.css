@@ -737,8 +737,15 @@ body.ttrss_main .post .header .title {
 	font-family: var(--rw-font-ui);
 }
 
+/* compact_images URL-Zeile im ContentPane ausblenden (readwise_theme übernimmt die Darstellung) */
+body.ttrss_main .post .header .ci-url-row {
+	display: none !important;
+}
+
 body.ttrss_main .post .header .post-article-url {
-	display: block;
+	display: flex;
+	align-items: center;
+	gap: 5px;
 	font-size: 0.78em;
 	color: var(--rw-text-muted);
 	overflow: hidden;
@@ -752,6 +759,13 @@ body.ttrss_main .post .header .post-article-url {
 body.ttrss_main .post .header .post-article-url:hover {
 	color: var(--rw-accent);
 	text-decoration: underline;
+}
+
+body.ttrss_main .post .header .post-article-url-favicon {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	vertical-align: middle;
 }
 
 body.ttrss_main .post .header .author.rw-author-clickable {
