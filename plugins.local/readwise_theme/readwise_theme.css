@@ -149,8 +149,9 @@ body.ttrss_main #toolbar-frame #toolbar #selected_prompt {
 	color: var(--rw-accent);
 }
 
-body.ttrss_main #toolbar-frame #toolbar #updates-available {
-	color: var(--rw-success);
+body.ttrss_main #toolbar-frame #toolbar #updates-available,
+body.ttrss_main #toolbar-frame #toolbar #plugin-updates-available {
+	display: none !important;
 }
 
 body.ttrss_main #toolbar-frame #toolbar i.net-alert,
