@@ -89,8 +89,8 @@ if [[ "$DRY_RUN" == "true" ]]; then
 fi
 
 # Working Tree prüfen (nur tracked Änderungen — untracked Files blockieren nicht)
-DIRTY=$(git status --porcelain | grep -v "^??")
-UNTRACKED=$(git status --porcelain | grep "^??" | awk '{print $2}')
+DIRTY=$(git status --porcelain | grep -v "^??" || true)
+UNTRACKED=$(git status --porcelain | grep "^??" | awk '{print $2}' || true)
 if [[ -n "$DIRTY" ]]; then
   error "Working Tree hat uncommitted Changes (tracked):"
   git status --short | grep -v "^?"
