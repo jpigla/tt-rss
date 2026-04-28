@@ -28,6 +28,16 @@ const ReadwiseTheme = {
 	},
 
 	/**
+	 * Öffnet eine Autorensuche (author:"Name") im Feed "Alle Artikel" (-4).
+	 */
+	openAuthorSearch: function (authorName) {
+		if (!authorName || !authorName.trim()) return;
+		var name = authorName.trim().replace(/"/g, '');
+		Feeds._search_query = { query: 'author:"' + name + '"', search_language: '' };
+		Feeds.open({ feed: -4 });
+	},
+
+	/**
 	 * Berechnet die Lesezeit aus DOM-Content (nach Unpack).
 	 */
 	calculateReadingTime: function (contentEl) {
@@ -130,7 +140,15 @@ const ReadwiseTheme = {
 		// Autor
 		if (meta.author) {
 			if (partCount > 0) infoSpan.appendChild(ReadwiseTheme.el('span', 'rw-meta-sep', '\u00B7'));
-			infoSpan.appendChild(ReadwiseTheme.el('span', 'rw-meta-author', meta.author));
+			var authorEl = ReadwiseTheme.el('a', 'rw-meta-author', meta.author);
+			authorEl.href = '#';
+			authorEl.title = 'Alle Artikel von ' + meta.author + ' anzeigen';
+			authorEl.addEventListener('click', function (e) {
+				e.stopPropagation();
+				e.preventDefault();
+				ReadwiseTheme.openAuthorSearch(meta.author);
+			});
+			infoSpan.appendChild(authorEl);
 			partCount++;
 		}
 
@@ -357,6 +375,17 @@ const ReadwiseTheme = {
 		urlLink.rel = 'noopener noreferrer';
 		urlLink.textContent = titleLink.href;
 		titleLink.insertAdjacentElement('afterend', urlLink);
+
+		var authorDiv = post.querySelector('.header .author');
+		if (authorDiv && authorDiv.textContent.trim()) {
+			var authorName = authorDiv.textContent.trim();
+			authorDiv.classList.add('rw-author-clickable');
+			authorDiv.title = 'Alle Artikel von ' + authorName + ' anzeigen';
+			authorDiv.addEventListener('click', function (e) {
+				e.stopPropagation();
+				ReadwiseTheme.openAuthorSearch(authorName);
+			});
+		}
 	},
 
 	/**

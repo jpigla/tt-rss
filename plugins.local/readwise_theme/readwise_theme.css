@@ -754,6 +754,15 @@ body.ttrss_main .post .header .post-article-url:hover {
 	text-decoration: underline;
 }
 
+body.ttrss_main .post .header .author.rw-author-clickable {
+	cursor: pointer;
+}
+
+body.ttrss_main .post .header .author.rw-author-clickable:hover {
+	color: var(--rw-accent);
+	text-decoration: underline;
+}
+
 body.ttrss_main .post .header img,
 body.ttrss_main .post .header i.material-icons {
 	color: var(--rw-text-muted) !important;
@@ -1429,6 +1438,13 @@ body.ttrss_main .rw-meta-icon {
 
 body.ttrss_main .rw-meta-author {
 	color: var(--rw-text-secondary);
+	cursor: pointer;
+	text-decoration: none;
+}
+
+body.ttrss_main .rw-meta-author:hover {
+	color: var(--rw-accent);
+	text-decoration: underline;
 }
 
 body.ttrss_main .rw-meta-time {
